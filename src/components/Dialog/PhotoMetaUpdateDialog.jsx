@@ -54,6 +54,8 @@ import {
   syncPeopleFromFaces,
   syncExternalPeopleFromFaces,
   getPersonLabel,
+  addAttendeeToPhoto,
+  removeAttendeeFromPhoto,
   confirmFaceAssignment,
   confirmExternalFaceAssignment,
 } from "../../utils/photoFaces";
@@ -64,6 +66,7 @@ import {
   getExternalEntityLabel,
 } from "../../utils/externalEntities";
 import useDialogSaveHotkey from "../../hooks/useDialogSaveHotkey";
+import PhotoAttendeesList from "../PhotoAttendeesList";
 
 export default function PhotoMetaUpdateDialog({
   open,
@@ -366,7 +369,7 @@ export default function PhotoMetaUpdateDialog({
             enriched,
           );
         } catch (e) {
-          console.warn("Не удалось сразу сохранить face reference", e);
+          console.warn("Не удалось сразу обновить эталон лица", e);
         }
       }
 
@@ -986,60 +989,34 @@ export default function PhotoMetaUpdateDialog({
                     />
                   )}
 
-                  <Autocomplete
-                    multiple
-                    options={allPeople}
-                    getOptionLabel={(p) =>
-                      `${p.id} :: ${[p.firstName, p.lastName || p.maidenName]
-                          .filter(Boolean)
-                          .join(" ") || "Без имени"
-                        } `.trim()
-                    }
-                    value={allPeople.filter((p) => local.people.includes(p.id))}
-                    onChange={(_, v) =>
-                      setLocal((s) => ({ ...s, people: v.map((x) => x.id) }))
-                    }
-                    renderInput={(params) => (
-                      <TextField
-                        {...params}
-                        variant="outlined"
-                        label="Кто на фото"
-                      />
-                    )}
-                    slotProps={{
-                      chip: { sx: { borderRadius: "8px", fontWeight: 500 } }
+                  <PhotoAttendeesList
+                    allPeople={allPeople}
+                    allExternal={allExternal}
+                    peopleIds={local.people || []}
+                    externalPeopleIds={local.externalPeople || []}
+                    onAdd={(option) => {
+                      setLocal((s) =>
+                        addAttendeeToPhoto(
+                          {
+                            people: s.people,
+                            externalPeople: s.externalPeople,
+                            faces: s.faces,
+                          },
+                          option,
+                        ),
+                      );
                     }}
-                  />
-
-                  <Autocomplete
-                    multiple
-                    options={allExternal}
-                    getOptionLabel={(e) =>
-                      `${e.id} :: ${getExternalEntityLabel(e)}`
-                    }
-                    value={allExternal.filter((e) =>
-                      local.externalPeople.includes(e.id),
-                    )}
-                    onChange={(_, v) =>
-                      setLocal((s) => ({
-                        ...s,
-                        externalPeople: v.map((x) => x.id),
-                      }))
-                    }
-                    renderInput={(params) => (
-                      <TextField
-                        {...params}
-                        variant="outlined"
-                        label="Из справочника (внешние)"
-                      />
-                    )}
-                    sx={{
-                      "& .MuiOutlinedInput-root": { borderRadius: "12px" },
-                    }}
-                    slotProps={{
-                      chip: {
-                        sx: { borderRadius: "8px", fontWeight: 500 },
-                      }
+                    onRemove={(option) => {
+                      setLocal((s) =>
+                        removeAttendeeFromPhoto(
+                          {
+                            people: s.people,
+                            externalPeople: s.externalPeople,
+                            faces: s.faces,
+                          },
+                          { kind: option.kind, id: option.id },
+                        ),
+                      );
                     }}
                   />
                 </Stack>

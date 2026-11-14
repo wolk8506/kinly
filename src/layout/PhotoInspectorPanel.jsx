@@ -32,8 +32,10 @@ import {
   syncPeopleFromFaces,
   syncExternalPeopleFromFaces,
   normalizeFaces,
+  addAttendeeToPhoto,
+  removeAttendeeFromPhoto,
 } from "../utils/photoFaces";
-import { getExternalEntityLabel } from "../utils/externalEntities";
+import PhotoAttendeesList from "../components/PhotoAttendeesList";
 import { syncReferencesAfterPhotoSave } from "../utils/faceIndex";
 import {
   inspectorDrawerTransitionProps,
@@ -142,7 +144,7 @@ export default function PhotoInspectorPanel({ allPeople = [] }) {
         );
       }
 
-      const faces = normalizeFaces(oldData.faces);
+      const faces = normalizeFaces(draft.faces ?? oldData.faces);
       const updatedEntry = {
         ...oldData,
         title: draft.title,
@@ -265,22 +267,6 @@ export default function PhotoInspectorPanel({ allPeople = [] }) {
   };
 
   const peopleOptions = allPeople;
-  // Единый список для отображения: родственники + справочник, но с раздельными id.
-  const photoTagOptions = useMemo(
-    () => [
-      ...allPeople.map((p) => ({
-        kind: "person",
-        id: p.id,
-        label: `${p.id} :: ${getPersonLabel(p)}`,
-      })),
-      ...allExternal.map((e) => ({
-        kind: "external",
-        id: e.id,
-        label: `${e.id} :: ${getExternalEntityLabel(e)}`,
-      })),
-    ],
-    [allPeople, allExternal],
-  );
 
   const locationText = draft?.locationName?.trim()
     ? draft.locationName
@@ -408,54 +394,39 @@ export default function PhotoInspectorPanel({ allPeople = [] }) {
                     )}
                   />
 
-                  <Autocomplete
-                    multiple
-                    size="small"
-                      options={photoTagOptions}
-                      groupBy={(o) =>
-                        o.kind === "person" ? "Родственники" : "Справочник"
-                      }
-                      getOptionLabel={(o) => o.label}
-                      isOptionEqualToValue={(a, b) =>
-                        a?.kind === b?.kind && a?.id === b?.id
-                      }
-                      value={photoTagOptions.filter((o) =>
-                        o.kind === "person"
-                          ? draft.people.includes(o.id)
-                          : draft.externalPeople.includes(o.id),
-                      )}
-                      onChange={(_, v) => {
-                        update({
-                          people: v
-                            .filter((x) => x.kind === "person")
-                            .map((x) => x.id),
-                          externalPeople: v
-                            .filter((x) => x.kind === "external")
-                            .map((x) => x.id),
-                        });
-                        scheduleSave();
-                      }}
-                      renderInput={(params) => (
-                        <TextField
-                          {...params}
-                          label="Кто на фото"
-                          variant="outlined"
-                          slotProps={{
-                            ...params.slotProps,
-
-                            inputLabel: {
-                              ...params.slotProps.inputLabel,
-                              shrink: true,
-                            }
-                          }}
-                        />
-                      )}
-                      slotProps={{
-                        chip: {
-                          sx: { borderRadius: "8px", fontWeight: 500 },
-                        }
-                      }}
-                    />
+                  <PhotoAttendeesList
+                    allPeople={allPeople}
+                    allExternal={allExternal}
+                    peopleIds={draft.people || []}
+                    externalPeopleIds={draft.externalPeople || []}
+                    onAdd={(option) => {
+                      const next = addAttendeeToPhoto(
+                        {
+                          people: draft.people,
+                          externalPeople: draft.externalPeople,
+                          faces: draft.faces,
+                        },
+                        option,
+                      );
+                      update(next);
+                      scheduleSave();
+                    }}
+                    onRemove={(option) => {
+                      const next = removeAttendeeFromPhoto(
+                        {
+                          people: draft.people,
+                          externalPeople: draft.externalPeople,
+                          faces: draft.faces,
+                        },
+                        { kind: option.kind, id: option.id },
+                      );
+                      update(next);
+                      scheduleSave();
+                    }}
+                    onInteractionEnd={() => {
+                      if (usePhotoInspectorStore.getState().dirty) scheduleSave();
+                    }}
+                  />
 
                   <Divider sx={{ opacity: 0.5 }} />
 
