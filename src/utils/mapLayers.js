@@ -5,6 +5,8 @@ export const MAP_BASE_LAYERS = [
     url: "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
     maxZoom: 19,
     subdomains: [],
+    // CARTO requires an API key; use OSM tiles with a dark CSS filter.
+    darkFilter: true,
   },
   {
     id: "topo",
@@ -12,6 +14,8 @@ export const MAP_BASE_LAYERS = [
     url: "https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png",
     maxZoom: 17,
     subdomains: ["a", "b", "c"],
+    // Тёмных тайлов у OpenTopoMap нет — затемняем CSS-фильтром.
+    darkFilter: true,
   },
   {
     id: "satellite",
@@ -22,8 +26,20 @@ export const MAP_BASE_LAYERS = [
   },
 ];
 
-export function getBaseLayer(id) {
-  return MAP_BASE_LAYERS.find((l) => l.id === id) || MAP_BASE_LAYERS[0];
+export function getBaseLayer(id, { dark = false } = {}) {
+  const layer =
+    MAP_BASE_LAYERS.find((l) => l.id === id) || MAP_BASE_LAYERS[0];
+  if (!dark) return layer;
+  if (layer.darkUrl) {
+    return {
+      ...layer,
+      url: layer.darkUrl,
+      subdomains: layer.darkSubdomains || layer.subdomains,
+      maxZoom: layer.darkMaxZoom ?? layer.maxZoom,
+    };
+  }
+  if (layer.darkFilter) return { ...layer, filtered: true };
+  return layer;
 }
 
 export function fillTileUrl(layer, z, x, y, s = "") {
@@ -31,7 +47,8 @@ export function fillTileUrl(layer, z, x, y, s = "") {
     .replace("{s}", s)
     .replace("{z}", z)
     .replace("{x}", x)
-    .replace("{y}", y);
+    .replace("{y}", y)
+    .replace("{r}", "");
 }
 
 function lngLatToTile(lng, lat, zoom) {

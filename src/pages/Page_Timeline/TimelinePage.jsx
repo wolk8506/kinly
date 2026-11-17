@@ -23,7 +23,6 @@ import MapIcon from "@mui/icons-material/Map";
 import { EVENT_TYPES } from "../Page_Person/Event/EventTypesList";
 import TimelineScrubber from "../../components/TimelineScrubber";
 import PhotoFullscreenViewer from "../../components/PhotoFullscreenViewer";
-import PhotoMetaUpdateDialog from "../../components/Dialog/PhotoMetaUpdateDialog";
 import EventEditorDialog from "../Page_Person/Event/EventEditorDialog";
 import TimelineEventDialog from "./TimelineEventDialog";
 import usePhotoThumbs from "../../hooks/usePhotoThumbs";
@@ -267,8 +266,6 @@ export default function TimelinePage({
   const [slideDirection, setSlideDirection] = useState(0);
   const [hideLabels, setHideLabels] = useState(false);
   const [sliderForcedFullscreen, setSliderForcedFullscreen] = useState(false);
-  const [editingPhoto, setEditingPhoto] = useState(null);
-  const [photoEditOpen, setPhotoEditOpen] = useState(false);
   const [allExternal, setAllExternal] = useState([]);
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [eventDialogOpen, setEventDialogOpen] = useState(false);
@@ -1270,23 +1267,9 @@ export default function TimelinePage({
         onPrev={handlePhotoPrev}
         onToggleMaximize={handleMaximizeWindow}
         onDownload={onDownload}
-        onEdit={(p) => {
-          setEditingPhoto(p);
-          setPhotoEditOpen(true);
-        }}
         currentPhotoInfo={fullList[fullIndex] || null}
         allPeople={allPeople}
         allExternal={allExternal}
-      />
-
-      <PhotoMetaUpdateDialog
-        open={photoEditOpen}
-        meta={editingPhoto}
-        onClose={async () => {
-          setPhotoEditOpen(false);
-          setEditingPhoto(null);
-          await refresh?.();
-        }}
       />
 
       <TimelineEventDialog

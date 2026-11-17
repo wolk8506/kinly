@@ -26,6 +26,10 @@ import CloseIcon from "@mui/icons-material/Close";
 import DialogActionButton, {
   DialogActionsBar,
 } from "../../../components/Dialog/DialogActionButton";
+import {
+  glassPaperSx,
+  glassBackdropSx,
+} from "../../../components/Dialog/glassDialog";
 import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 import EditIcon from "@mui/icons-material/Edit";
@@ -3287,6 +3291,16 @@ export default function BiographySection({
         onClose={() => closePrompt(null)}
         maxWidth="xs"
         fullWidth
+        slotProps={{
+          backdrop: { sx: glassBackdropSx },
+          paper: {
+            sx: (t) => ({
+              ...glassPaperSx(t),
+              width: "100%",
+              maxWidth: 600,
+            }),
+          }
+        }}
       >
         <DialogTitle>{promptState?.title}</DialogTitle>
         <DialogContent>
@@ -3354,23 +3368,13 @@ export default function BiographySection({
         }}
         slotProps={{
           transition: { direction: "down" },
+          backdrop: { sx: glassBackdropSx },
 
           paper: {
-            sx: {
-              // Адаптивный фон: в темной теме чуть прозрачный для блюра, в светлой — белый
-              bgcolor: (theme) =>
-                theme.palette.mode === "dark"
-                  ? alpha(theme.palette.background.paper, 0.8)
-                  : theme.palette.background.paper,
+            sx: (t) => ({
+              ...glassPaperSx(t),
               width: 500,
-              backdropFilter: "blur(16px)",
-              backgroundImage: "none",
-              borderRadius: "24px", // Увеличил до 24px для единства стиля
-              border: "1px solid",
-              borderColor: "divider", // Системный цвет границы (адаптивный)
-              boxShadow: (theme) => theme.shadows[24],
-              overflow: "hidden",
-            },
+            }),
           }
         }}>
         <Box sx={{ p: 4, minWidth: 320, textAlign: "center" }}>

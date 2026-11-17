@@ -1,12 +1,9 @@
 import { describe, it, expect } from "vitest";
-import { createRequire } from "node:module";
-
-const require = createRequire(import.meta.url);
-const {
+import {
   APP_IDENTIFIER,
   buildExportManifest,
   buildGenealogyDataExportPayload,
-} = require("../../src/main/handlers/exportArchiveManifest.cjs");
+} from "../../src/main/handlers/exportArchiveManifest.js";
 
 describe("exportArchiveManifest", () => {
   const createdAt = "2026-01-01T12:00:00.000Z";
@@ -38,7 +35,7 @@ describe("exportArchiveManifest", () => {
       includeHistory: true,
     });
 
-    expect(payload.schemaVersion).toBe(1); // GENEALOGY_DATA_SCHEMA_VERSION
+    expect(payload.schemaVersion).toBe(1);
     expect(payload.appIdentifier).toBe(APP_IDENTIFIER);
     expect(payload.exportedAt).toBe(createdAt);
     expect(payload.people).toEqual(people);

@@ -3,7 +3,11 @@ import { Box, Dialog, Typography } from "@mui/material";
 import DialogActionButton, {
   DialogActionsBar,
 } from "./DialogActionButton";
-import { glassPaperSx, secondaryButtonSx } from "./glassDialog";
+import {
+  glassPaperSx,
+  glassBackdropSx,
+  secondaryButtonSx,
+} from "./glassDialog";
 
 // Иконка приложения — общий знак системных сообщений. Скругление держит
 // пропорцию ~22% от размера, как у иконки в доке.
@@ -47,7 +51,10 @@ export default function NoticeDialog({
       open={open}
       onClose={onClose}
       transitionDuration={{ enter: 180, exit: 140 }}
-      slotProps={{ paper: { sx: (t) => ({ ...glassPaperSx(t), width }) } }}
+      slotProps={{
+        backdrop: { sx: glassBackdropSx },
+        paper: { sx: (t) => ({ ...glassPaperSx(t), width }) },
+      }}
     >
       <Box sx={{ px: { xs: 2, sm: 3 }, pt: { xs: 2, sm: 3 }, pb: 2, textAlign: "center" }}>
         {icon && (

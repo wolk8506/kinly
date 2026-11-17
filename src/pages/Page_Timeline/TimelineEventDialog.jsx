@@ -3,6 +3,10 @@ import { Dialog, Stack, Typography, Chip, Box, Divider } from "@mui/material";
 import DialogActionButton, {
   DialogActionsBar,
 } from "../../components/Dialog/DialogActionButton";
+import {
+  glassPaperSx,
+  glassBackdropSx,
+} from "../../components/Dialog/glassDialog";
 
 const sectionLabelSx = {
   display: "block",
@@ -46,17 +50,16 @@ export default function TimelineEventDialog({
       maxWidth={false}
       transitionDuration={{ enter: 180, exit: 140 }}
       slotProps={{
+        backdrop: { sx: glassBackdropSx },
         paper: {
-          sx: {
+          sx: (t) => ({
+            ...glassPaperSx(t),
             width: 440,
             maxWidth: "94vw",
             maxHeight: "calc(100vh - 64px)",
-            borderRadius: "24px",
-            backgroundImage: "none",
             display: "flex",
             flexDirection: "column",
-            overflow: "hidden",
-          },
+          }),
         }
       }}
     >

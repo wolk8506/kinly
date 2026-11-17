@@ -464,6 +464,27 @@ function deleteReferencesForPerson(personId) {
   return { deleted: info.changes };
 }
 
+/** Эталоны с рамки на снимке (не avatar). */
+function deleteReferencesForPhoto(owner, photoId) {
+  const ownerKey = owner != null ? String(owner).trim() : "";
+  const photoKey = photoId != null ? String(photoId).trim() : "";
+  if (!ownerKey || !photoKey) {
+    return { deleted: 0 };
+  }
+
+  const db = getDb();
+  const info = db
+    .prepare(
+      `DELETE FROM face_references
+       WHERE source = 'tagged'
+         AND owner = ?
+         AND photo_id = ?`,
+    )
+    .run(ownerKey, photoKey);
+
+  return { deleted: info.changes };
+}
+
 function reassignReferencesToPerson(keepPersonId, removePersonIds) {
   const keep = Number(keepPersonId);
   const removeIds = (removePersonIds || [])
@@ -598,6 +619,7 @@ module.exports = {
   getFaceScanState,
   deleteReferencesForPerson,
   deleteReferencesForExternal,
+  deleteReferencesForPhoto,
   reassignReferencesToPerson,
   getFaceDbStats,
   runFaceDbVacuumAnalyze,

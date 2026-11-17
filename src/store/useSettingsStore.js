@@ -6,6 +6,7 @@ export const useSettingsStore = create((set, get) => ({
     newLabelDuration: 24,
     maxUploadSize: 0.5,
     homePersonId: null,
+    mapTheme: "auto",
   },
   settingsLoaded: false,
 

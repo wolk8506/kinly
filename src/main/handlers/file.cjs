@@ -8,6 +8,7 @@ const {
   readPhotosMeta,
   updatePhotosMeta,
 } = require("./photosMetaStore.cjs");
+const { deleteReferencesForPhoto } = require("../db/faceDb.cjs");
 const { withWriteLock, writeBufferAtomic } = require("./jsonStore.cjs");
 
 const FILE_EXT_TYPES = {
@@ -276,6 +277,9 @@ ipcMain.handle(
         return { ok: true, removed: 0, message: "No matching entry found" };
       }
       await updatePhotosMeta(ownerId, () => filtered);
+      if (id != null) {
+        deleteReferencesForPhoto(ownerId, id);
+      }
       return { ok: true, removed: beforeLen - filtered.length };
     } catch (err) {
       log.error("[photo:removeFromOwnerJson] failed:", err);

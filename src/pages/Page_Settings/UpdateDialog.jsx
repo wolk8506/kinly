@@ -3,7 +3,11 @@ import { Box, Dialog, LinearProgress, Typography } from "@mui/material";
 import DialogActionButton, {
   DialogActionsBar,
 } from "../../components/Dialog/DialogActionButton";
-import { glassPaperSx, secondaryButtonSx } from "../../components/Dialog/glassDialog";
+import {
+  glassPaperSx,
+  glassBackdropSx,
+  secondaryButtonSx,
+} from "../../components/Dialog/glassDialog";
 import { AppIcon } from "../../components/Dialog/NoticeDialog";
 import { useSettingsStore } from "../../store/useSettingsStore";
 import { useUpdateStore } from "../../store/useUpdateStore";
@@ -104,6 +108,7 @@ export function UpdateDialog() {
       onClose={remindLater}
       transitionDuration={{ enter: 180, exit: 140 }}
       slotProps={{
+        backdrop: { sx: glassBackdropSx },
         paper: {
           sx: (t) => ({ ...glassPaperSx(t), width: 440 }),
         },

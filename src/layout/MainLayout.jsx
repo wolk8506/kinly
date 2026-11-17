@@ -23,6 +23,7 @@ import {
   Typography,
   IconButton,
   CircularProgress,
+  Tooltip,
 } from "@mui/material";
 import { alpha, styled, useTheme } from "@mui/material/styles";
 import MuiAppBar from "@mui/material/AppBar";
@@ -1235,9 +1236,9 @@ export default function MainLayout() {
               isGenealogyTreePage) && (
               <Box sx={{ ml: "12px", display: "inline-flex" }}>
                 <ButtonConteiner>
+                  <Tooltip title="Правая панель">
                   <IconButton
                     aria-label="Правая панель"
-                    title="Правая панель"
                     onClick={() => {
                       if (isExternalPage) setExternalPanelOpen((v) => !v);
                       else if (isMapPage) setMapPanelOpen((v) => !v);
@@ -1256,6 +1257,7 @@ export default function MainLayout() {
                       sx={{ fontSize: TOOLBAR_HIT.iconSize, color: "inherit" }}
                     />
                   </IconButton>
+                  </Tooltip>
                 </ButtonConteiner>
               </Box>
             )}

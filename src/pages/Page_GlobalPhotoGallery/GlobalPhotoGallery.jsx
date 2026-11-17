@@ -289,6 +289,10 @@ export default function GlobalPhotoGallery({
         // Клик по пустому месту галереи снимает выделение.
         // Клики по фото и элементам управления его не снимают, а шапка
         // и боковое меню лежат вне этого контейнера и сюда не попадают.
+        // Модалки живут в портале (document.body), но React поднимает их
+        // события по дереву компонентов — без проверки на принадлежность
+        // закрытие любой модалки снимало выделение с фото.
+        if (!event.currentTarget.contains(event.target)) return;
         if (event.target.closest("[data-photo-cell]")) return;
         clearSelection();
       }}

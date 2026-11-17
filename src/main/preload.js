@@ -151,6 +151,8 @@ contextBridge.exposeInMainWorld("faceAPI", {
   saveScanState: (scanState) =>
     ipcRenderer.invoke("face:saveScanState", scanState),
   getScanState: () => ipcRenderer.invoke("face:getScanState"),
+  deleteReferencesForPhoto: (owner, photoId) =>
+    ipcRenderer.invoke("face:deleteReferencesForPhoto", { owner, photoId }),
   mergePersonIds: (keepPersonId, removePersonIds) =>
     ipcRenderer.invoke("face:mergePersonIds", {
       keepPersonId,

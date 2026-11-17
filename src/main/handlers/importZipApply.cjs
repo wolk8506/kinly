@@ -55,6 +55,9 @@ async function importZipFromPath(zipPath, options = {}, hooks = {}) {
   const uniqueTmpDir = path.join(os.tmpdir(), `genealogy-import-${Date.now()}`);
   const report = {
     totalPersons: 0,
+    peopleInArchive: 0,
+    peopleSkippedByChoice: 0,
+    photoFilesSkipped: 0,
     success: 0,
     failed: 0,
     errors: [],
@@ -156,6 +159,11 @@ async function importZipFromPath(zipPath, options = {}, hooks = {}) {
     else if (userDecision.action === "new") finalIds = toAdd.map(String);
 
     report.totalPersons = finalIds.length;
+    report.peopleInArchive = archivePeople.length;
+    report.peopleSkippedByChoice = Math.max(
+      0,
+      archivePeople.length - finalIds.length,
+    );
 
     try {
       onProgress({
@@ -318,6 +326,7 @@ async function importZipFromPath(zipPath, options = {}, hooks = {}) {
           if (photosIndex >= 0) {
             const folder = relParts[photosIndex + 1];
             if (folder && PHOTO_FOLDERS.has(folder) && !restorePhotoFolderSet.has(folder)) {
+              report.photoFilesSkipped += 1;
               continue;
             }
           }

@@ -18,6 +18,10 @@ import DialogActionButton, {
   DialogActionsBar,
 } from "../../components/Dialog/DialogActionButton";
 import {
+  glassPaperSx,
+  glassBackdropSx,
+} from "../../components/Dialog/glassDialog";
+import {
   groupSx,
   sectionLabelSx,
   RowIcon,
@@ -391,8 +395,11 @@ export const StorageCard = ({ cardStyle }) => {
         maxWidth="xs"
         fullWidth
         slotProps={{
+          backdrop: { sx: glassBackdropSx },
           paper: {
-            sx: { borderRadius: "24px", backgroundImage: "none" },
+            sx: (t) => ({
+              ...glassPaperSx(t),
+            }),
           }
         }}
       >

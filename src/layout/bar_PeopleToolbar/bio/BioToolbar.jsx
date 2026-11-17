@@ -26,7 +26,7 @@ import {
 } from "./BioFormatIcons";
 import ButtonConteiner from "../../../components/ButtonConteiner";
 import ToolbarButtonGroup from "../../../components/ToolbarButtonGroup";
-import { TOOLBAR_CAPSULE } from "../../toolbarTokens";
+import { TOOLBAR_CAPSULE, TOOLBAR_HIT } from "../../toolbarTokens";
 import {
   toolbarClusterSx,
   toolbarDragSpacerSx,
@@ -119,7 +119,7 @@ export default function BioToolbar({
             sx={{
               color: isEditing ? "common.white" : "inherit",
               bgcolor: isEditing ? "primary.main" : "transparent",
-              p: "8px",
+              p: 0,
               transition:
                 "background-color 160ms ease-out, color 160ms ease-out",
               ...(isEditing && { "&:hover": { bgcolor: "primary.dark" } }),
@@ -129,7 +129,7 @@ export default function BioToolbar({
             }}
           >
             <SquareAndPencilIcon
-              height={17}
+              height={TOOLBAR_HIT.iconSize}
               fillOpacity={isEditing ? 1 : 0.85}
             />
           </IconButton>
@@ -142,7 +142,7 @@ export default function BioToolbar({
             onClick={onToggleNav}
             sx={{ color: "inherit", p: 0 }}
           >
-            <TocIcon fontSize="inherit" />
+            <TocIcon sx={{ fontSize: TOOLBAR_HIT.iconSize }} />
           </IconButton>
         </Tooltip>
       </ButtonConteiner>
@@ -155,7 +155,7 @@ export default function BioToolbar({
               sx={{ color: "inherit", p: 0 }}
               onClick={onPrint}
             >
-              <PrintIcon fontSize="inherit" />
+              <PrintIcon sx={{ fontSize: TOOLBAR_HIT.iconSize }} />
             </IconButton>
           </Tooltip>
           <Tooltip title="Экспорт в PDF">
@@ -164,7 +164,7 @@ export default function BioToolbar({
               sx={{ color: "inherit", p: 0 }}
               onClick={onExportPdf}
             >
-              <PictureAsPdfIcon fontSize="inherit" />
+              <PictureAsPdfIcon sx={{ fontSize: TOOLBAR_HIT.iconSize }} />
             </IconButton>
           </Tooltip>
         </ButtonConteiner>
@@ -181,7 +181,7 @@ export default function BioToolbar({
                   onClick={onSave}
                   disabled={!isDirty}
                 >
-                  <SaveIcon fontSize="inherit" />
+                  <SaveIcon sx={{ fontSize: TOOLBAR_HIT.iconSize }} />
                 </IconButton>
               </span>
             </Tooltip>
@@ -193,14 +193,14 @@ export default function BioToolbar({
               sx={{ color: "inherit", p: 0 }}
               onClick={() => execRef.current?.exec("Undo")}
             >
-              <UndoIcon fontSize="inherit" />
+              <UndoIcon sx={{ fontSize: TOOLBAR_HIT.iconSize }} />
             </IconButton>
             <IconButton
               size="small"
               sx={{ color: "inherit", p: 0 }}
               onClick={() => execRef.current?.exec("Redo")}
             >
-              <RedoIcon fontSize="inherit" />
+              <RedoIcon sx={{ fontSize: TOOLBAR_HIT.iconSize }} />
             </IconButton>
           </ButtonConteiner>
 

@@ -42,6 +42,42 @@ export const RELATION_TYPES = {
   other: "Другое",
 };
 
+export const RELATION_GROUPS = {
+  parents: { label: "Родители", types: ["father", "mother"] },
+  children: { label: "Дети", types: ["son", "daughter"] },
+  siblings: { label: "Братья и сёстры", types: ["brother", "sister"] },
+  godparents: { label: "Крёстные", types: ["godfather", "godmother"] },
+  godchildren: { label: "Крёстники", types: ["godson", "goddaughter"] },
+  relatives: {
+    label: "Родня",
+    types: ["cousin_m", "cousin_f", "nephew", "niece", "relative"],
+  },
+  friends: {
+    label: "Друзья и знакомые",
+    types: [
+      "friend_m",
+      "friend_f",
+      "classmate",
+      "groupmate",
+      "colleague",
+      "neighbor",
+      "acquaintance",
+    ],
+  },
+  mentors: { label: "Наставники", types: ["teacher", "trainer", "nanny"] },
+  other: { label: "Другое", types: ["pet_owner", "other"] },
+};
+
+const RELATION_GROUP_BY_TYPE = Object.fromEntries(
+  Object.values(RELATION_GROUPS).flatMap((group) =>
+    group.types.map((type) => [type, group.label]),
+  ),
+);
+
+export function getRelationGroupLabel(type) {
+  return RELATION_GROUP_BY_TYPE[type] || "Прочие";
+}
+
 export function getEntityTypeLabel(type) {
   return ENTITY_TYPES[type]?.label || type;
 }
@@ -160,7 +196,7 @@ export function buildFaceTagOptions(allPeople = [], allExternal = []) {
   const externalOptions = filterActiveExternal(allExternal).map((e) => ({
     kind: "external",
     id: e.id,
-    label: `${e.id} :: ${getExternalEntityLabel(e)} (справочник)`,
+    label: `${e.id} :: ${getExternalEntityLabel(e)}`,
     data: e,
   }));
 
@@ -185,7 +221,7 @@ export function faceTagOptionFromFace(face, allPeople, allExternal) {
       return {
         kind: "external",
         id: e.id,
-        label: `${e.id} :: ${getExternalEntityLabel(e)} (справочник)`,
+        label: `${e.id} :: ${getExternalEntityLabel(e)}`,
         data: e,
       };
     }

@@ -30,6 +30,22 @@ const ADD_ICON = 20;
 const ATTENDEE_FONT_SIZE = "0.815rem";
 const ATTENDEE_FONT_WEIGHT = 500;
 
+const attendeeMenuItemSx = {
+  py: 0.75,
+  borderRadius: `${TOOLBAR_MENU.itemRadiusPx}`,
+  transform: "none",
+  transition: "none",
+  "&:hover": { bgcolor: "transparent" },
+  "&.Mui-selected": {
+    bgcolor: "action.selected",
+    transform: "none",
+  },
+  "&.Mui-selected:hover": {
+    bgcolor: "action.selected",
+    transform: "none",
+  },
+};
+
 function AttendeeRemoveButton({ onClick }) {
   return (
     <IconButton
@@ -114,6 +130,7 @@ export default function PhotoAttendeesList({
   onAdd,
   onRemove,
   onInteractionEnd,
+  label = "Кто на фото",
 }) {
   const theme = useTheme();
   const sectionRef = useRef(null);
@@ -140,6 +157,19 @@ export default function PhotoAttendeesList({
   const openMenuFromSearchClick = useCallback(() => {
     setMenuOpen(true);
   }, []);
+
+  const handleInputBlur = useCallback((e) => {
+    const related = e.relatedTarget;
+    if (menuPaperRef.current?.contains(related)) return;
+    if (sectionRef.current?.contains(related)) return;
+    requestAnimationFrame(() => {
+      const active = document.activeElement;
+      if (menuPaperRef.current?.contains(active)) return;
+      if (active === inputRef.current) return;
+      setMenuOpen(false);
+    });
+  }, []);
+
   const [highlight, setHighlight] = useState(0);
 
   const options = useMemo(
@@ -231,16 +261,18 @@ export default function PhotoAttendeesList({
       return (
         <ListItemButton
           key={`${option.kind}-${option.id}`}
+          disableRipple
           selected={menuOpen && index === highlight}
           onMouseEnter={() => setHighlight(index)}
           onClick={() => pickOption(option)}
-          sx={{ py: 0.75, borderRadius: `${TOOLBAR_MENU.itemRadiusPx}` }}
+          sx={attendeeMenuItemSx}
         >
           <Typography
             variant="body2"
             sx={{
               fontSize: ATTENDEE_FONT_SIZE,
-              fontWeight: index === highlight ? 600 : ATTENDEE_FONT_WEIGHT,
+              fontWeight: ATTENDEE_FONT_WEIGHT,
+              pointerEvents: "none",
             }}
           >
             {option.label}
@@ -262,12 +294,14 @@ export default function PhotoAttendeesList({
   return (
     <ClickAwayListener onClickAway={handleSectionClickAway}>
       <Box ref={sectionRef}>
-        <Typography
-          variant="caption"
-          sx={{ color: "text.secondary", fontWeight: 700, mb: 0.5, display: "block" }}
-        >
-          Кто на фото
-        </Typography>
+        {label ? (
+          <Typography
+            variant="caption"
+            sx={{ color: "text.secondary", fontWeight: 700, mb: 0.5, display: "block" }}
+          >
+            {label}
+          </Typography>
+        ) : null}
 
         <Box
           ref={anchorRef}
@@ -293,7 +327,6 @@ export default function PhotoAttendeesList({
             borderRadius: "12px",
             overflow: "hidden",
             outline: "none",
-            minHeight: selectedRows.length === 0 && !blockActive ? 36 : undefined,
             bgcolor: (t) =>
               t.palette.mode === "dark"
                 ? "rgba(255,255,255,0.06)"
@@ -305,6 +338,7 @@ export default function PhotoAttendeesList({
         >
         {selectedRows.map((row, index) => {
           const isLastRow = index === selectedRows.length - 1 && !blockActive;
+          const isFirstRow = index === 0;
           return (
             <Box
               key={`${row.kind}-${row.id}`}
@@ -312,9 +346,9 @@ export default function PhotoAttendeesList({
                 display: "flex",
                 alignItems: "center",
                 minWidth: 0,
-                px: 1.25,
-                pt: 0.75,
-                pb: isLastRow ? "6px" : 0,
+                px: "12px",
+                pt: isFirstRow ? "9px" : "4px",
+                pb: isLastRow ? "9px" : "4px",
               }}
             >
               <Box
@@ -322,7 +356,7 @@ export default function PhotoAttendeesList({
                 sx={{
                   display: "inline-flex",
                   alignItems: "center",
-                  gap: 1,
+                  gap: "12px",
                   minWidth: 0,
                   maxWidth: "100%",
                   width: "min(100%, max-content)",
@@ -389,15 +423,35 @@ export default function PhotoAttendeesList({
           );
         })}
 
+        {selectedRows.length === 0 && !blockActive ? (
+          <Box
+            sx={{
+              px: "12px",
+              py: "9px",
+              cursor: "pointer",
+            }}
+          >
+            <Typography
+              sx={{
+                fontSize: ATTENDEE_FONT_SIZE,
+                fontWeight: ATTENDEE_FONT_WEIGHT,
+                color: "text.secondary",
+              }}
+            >
+              Добавить человека на фото
+            </Typography>
+          </Box>
+        ) : null}
+
         {blockActive ? (
           <Box
             sx={{
               display: "flex",
               alignItems: "center",
-              gap: 1,
-              px: 1.25,
-              pt: 0.85,
-              pb: "6px",
+              gap: "12px",
+              px: "12px",
+              pt: "9px",
+              pb: "9px",
             }}
           >
             <AddCircleIcon
@@ -411,9 +465,7 @@ export default function PhotoAttendeesList({
                 setHighlight(0);
                 setMenuOpen(true);
               }}
-              onBlur={() => {
-                setMenuOpen(false);
-              }}
+              onBlur={handleInputBlur}
               onMouseDown={(e) => {
                 e.stopPropagation();
                 openMenuFromSearchClick();

@@ -1,6 +1,5 @@
 import React from "react";
-import { Drawer, Box, Typography } from "@mui/material";
-import ContactsIcon from "@mui/icons-material/Contacts";
+import { Drawer, Box } from "@mui/material";
 import ExternalEntityDetail from "../pages/Page_External/ExternalEntityDetail";
 import {
   inspectorDrawerTransitionProps,
@@ -42,24 +41,7 @@ export default function ExternalInspectorPanel({
           flexDirection: "column",
         }}
       >
-        <Box
-          sx={{
-            p: 2,
-            pb: 1.5,
-            display: "flex",
-            alignItems: "center",
-            gap: 1,
-          }}
-        >
-          <ContactsIcon color="primary" sx={{ fontSize: 20 }} />
-          <Typography variant="subtitle1" sx={{
-            fontWeight: 800
-          }}>
-            Карточка
-          </Typography>
-        </Box>
-
-        <Box sx={{ flexGrow: 1, overflowY: "auto" }}>
+        <Box sx={{ flexGrow: 1, overflowY: "auto", height: "100%" }}>
           <ExternalEntityDetail
             entityId={entityId}
             onDeleted={onDeleted}

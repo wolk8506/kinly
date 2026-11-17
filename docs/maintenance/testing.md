@@ -27,6 +27,7 @@ npm run test:coverage   # пороги v8 по import/dataStore/jsonStore (см.
 | `tests/main/faceDb.test.mjs` | save/load reference, `getFaceDbStats` |
 | `tests/main/archiveUtils.test.mjs` | пути и обход файлов для `archive:create` |
 | `tests/main/exportArchiveManifest.test.mjs` | manifest + genealogy-data для экспорта |
+| `tests/main/exportArchiveCreate.test.mjs` | staging как exportToZip → `createArchiveFromPaths` → `inspectArchive` |
 | `tests/renderer/buildFamilyViews.test.mjs` | семьи из spouses + father/mother (чистый JS) |
 | `tests/renderer/formatDate.test.mjs` | `formatNotificationDate` (fake timers) |
 
@@ -40,7 +41,7 @@ npm run test:coverage   # пороги v8 по import/dataStore/jsonStore (см.
 
 Реальные пользовательские архивы в CI не кладём.
 
-**Not covered yet:** IPC-обёртка `import:zip` (тонкая), экспорт архива.
+**Not covered yet:** IPC-обёртка `import:zip` (тонкая), IPC `archive:create` (логика — `archiveCreateFromPaths.cjs`).
 
 **CI:**
 - `test.yml` — `npm test` (unit) на Ubuntu и **Windows** (`push` / `pull_request`)

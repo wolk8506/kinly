@@ -2,7 +2,7 @@
 import {
   buildExportManifest,
   buildGenealogyDataExportPayload,
-} from "../../main/handlers/exportArchiveManifest.cjs";
+} from "../../main/handlers/exportArchiveManifest.js";
 
 export const exportPeopleToZip = async ({
   people,
@@ -357,8 +357,16 @@ export const exportPeopleToZip = async ({
           processedFilesCount++; // Исправлено (было rocessedFilesCount)
 
           // 2. Ищем картинки
+          // Путь может быть с заголовком размера: ![](bio_images/x.jpg "bio-size:lg")
+          // и/или в угловых скобках: ![](<bio_images/x y.jpg>)
           const imageMatches = [...bioText.matchAll(/!\[.*?\]\((.*?)\)/g)];
-          const imageNames = imageMatches.map((m) => m[1]);
+          const imageNames = imageMatches
+            .map((m) => {
+              const raw = m[1] || "";
+              const pathMatch = raw.match(/^\s*(?:<([^>]+)>|([^\s)]+))/);
+              return pathMatch ? pathMatch[1] || pathMatch[2] : "";
+            })
+            .filter(Boolean);
 
           for (const relPath of imageNames) {
             try {

@@ -224,9 +224,10 @@ export const FaceScanMasterCard = ({ cardStyle }) => {
     try {
       const prep = await ensureFaceReferencesReady(allPeople);
       if (prep?.rebuilt) {
-        enqueueSnackbar("Face references были пустыми и пересобраны", {
-          variant: "info",
-        });
+        enqueueSnackbar(
+          "Эталоны лиц были пустыми и пересобраны из подтверждённых снимков",
+          { variant: "info" },
+        );
       }
 
       const result = await runFaceScan(
@@ -286,18 +287,18 @@ export const FaceScanMasterCard = ({ cardStyle }) => {
       const externalCount = refs.filter((r) => r?.externalEntityId).length;
 
       enqueueSnackbar(
-        `Готово: ${refs.length} refs (avatar: ${avatarCount}, tagged: ${taggedCount}, external: ${externalCount})`,
+        `Эталоны обновлены: всего ${refs.length} (с аватаров: ${avatarCount}, с фото: ${taggedCount}, справочник: ${externalCount})`,
         { variant: "success" },
       );
       addNotification({
-        title: "Face references",
-        message: `Пересобрано: ${refs.length} (avatar: ${avatarCount}, tagged: ${taggedCount}, external: ${externalCount})`,
+        title: "Распознавание лиц",
+        message: `Пересобраны эталоны: ${refs.length} записей (аватары: ${avatarCount}, подписанные лица на фото: ${taggedCount}, справочник: ${externalCount}).`,
         type: "success",
         category: "faceReview",
       });
     } catch (e) {
       console.error(e);
-      enqueueSnackbar("Не удалось пересобрать face references", {
+      enqueueSnackbar("Не удалось пересобрать эталоны лиц", {
         variant: "error",
       });
     } finally {
@@ -472,8 +473,8 @@ export const FaceScanMasterCard = ({ cardStyle }) => {
                         <RefreshIcon sx={{ fontSize: 18 }} />
                       </RowIcon>
                     }
-                    title="Пересобрать face references"
-                    subtitle="Обновить эталонные дескрипторы"
+                    title="Пересобрать эталоны"
+                    subtitle="Заново прочитать подтверждённые лица с фото и аватаров"
                     disabled={rebuildingReferences}
                     onClick={handleRebuildReferences}
                     trailing={

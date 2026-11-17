@@ -20,6 +20,7 @@ import "dayjs/locale/ru";
 import DialogActionButton, {
   DialogActionsBar,
 } from "./Dialog/DialogActionButton";
+import { glassPaperSx, glassBackdropSx } from "./Dialog/glassDialog";
 
 dayjs.locale("ru");
 
@@ -138,14 +139,14 @@ export default function CustomDatePickerDialog({
       maxWidth={false}
       transitionDuration={{ enter: 180, exit: 140 }}
       slotProps={{
+        backdrop: { sx: glassBackdropSx },
         paper: {
-          sx: {
+          sx: (t) => ({
+            ...glassPaperSx(t),
             width: 440,
             maxWidth: "94vw",
-            borderRadius: "24px",
-            backgroundImage: "none",
             overflow: "hidden",
-          },
+          }),
         }
       }}
     >

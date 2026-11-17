@@ -12,7 +12,11 @@ import WarningAmberRoundedIcon from "@mui/icons-material/WarningAmberRounded";
 import DialogActionButton, {
   DialogActionsBar,
 } from "./DialogActionButton";
-import { glassPaperSx, secondaryButtonSx } from "./glassDialog";
+import {
+  glassPaperSx,
+  glassBackdropSx,
+  secondaryButtonSx,
+} from "./glassDialog";
 
 // Простое подтверждение вместо нативного window.confirm:
 // не блокирует main-процесс и выглядит как остальной UI.
@@ -34,6 +38,7 @@ export default function ConfirmDialog({
         if (!busy) onClose(false);
       }}
       slotProps={{
+        backdrop: { sx: glassBackdropSx },
         paper: {
           sx: (t) => ({ ...glassPaperSx(t), width: 300 }),
         }

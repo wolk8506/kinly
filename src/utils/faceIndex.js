@@ -32,11 +32,27 @@ export function normalizeFaceIndex(raw) {
   };
 }
 
+/** Ключи owner/photoId — в SQLite и JSON бывают числом и строкой. */
+export function photoRefKeys(owner, photoId) {
+  return {
+    ownerKey: owner == null ? "" : String(owner).trim(),
+    photoKey: photoId == null ? "" : String(photoId).trim(),
+  };
+}
+
+export function taggedPhotoMatches(ref, ownerKey, photoKey) {
+  if (ref?.source !== "tagged") return false;
+  return (
+    String(ref.owner ?? "").trim() === ownerKey &&
+    String(ref.photoId ?? "").trim() === photoKey
+  );
+}
+
 export function referenceKey(ref) {
   if (ref.source === "avatar") {
     return `avatar:${ref.externalEntityId ?? ref.personId}`;
   }
-  return `face:${ref.owner}:${ref.photoId}:${ref.faceId}`;
+  return `face:${String(ref.owner ?? "")}:${String(ref.photoId ?? "")}:${String(ref.faceId ?? "")}`;
 }
 
 export function upsertReference(index, ref) {
@@ -49,13 +65,13 @@ export function upsertReference(index, ref) {
 
 export function removeReferencesForFace(index, { owner, photoId, faceId }) {
   const next = normalizeFaceIndex(index);
+  const { ownerKey, photoKey } = photoRefKeys(owner, photoId);
+  const faceKey = faceId == null ? "" : String(faceId).trim();
   next.references = next.references.filter(
     (r) =>
       !(
-        r.source === "tagged" &&
-        r.owner === owner &&
-        r.photoId === photoId &&
-        r.faceId === faceId
+        taggedPhotoMatches(r, ownerKey, photoKey) &&
+        String(r.faceId ?? "").trim() === faceKey
       ),
   );
   return next;
@@ -176,13 +192,17 @@ export async function rebuildFaceIndex(
 export async function syncReferencesAfterPhotoSave(photo, faces) {
   if (!window.faceAPI?.loadIndex) return;
 
+  const { ownerKey, photoKey } = photoRefKeys(photo.owner, photo.id);
+  if (!ownerKey || !photoKey) return;
+
+  if (window.faceAPI.deleteReferencesForPhoto) {
+    await window.faceAPI.deleteReferencesForPhoto(photo.owner, photo.id);
+  }
+
   let index = normalizeFaceIndex(await window.faceAPI.loadIndex());
-  const owner = photo.owner;
-  const photoId = photo.id;
 
   index.references = index.references.filter(
-    (r) =>
-      !(r.source === "tagged" && r.owner === owner && r.photoId === photoId),
+    (r) => !taggedPhotoMatches(r, ownerKey, photoKey),
   );
 
   for (const face of normalizeFaces(faces)) {
@@ -195,8 +215,8 @@ export async function syncReferencesAfterPhotoSave(photo, faces) {
       externalEntityId: face.externalEntityId,
       descriptor: face.descriptor,
       source: "tagged",
-      owner,
-      photoId,
+      owner: ownerKey,
+      photoId: photoKey,
       faceId: face.id,
     });
   }

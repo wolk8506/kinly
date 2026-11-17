@@ -249,10 +249,19 @@ export function suggestPerson(descriptor, references, threshold = DEFAULT_MATCH_
       bestDistance: Infinity,
       taggedHits: 0,
       avatarHits: 0,
+      bestRef: null,
     };
 
     if (distance < prev.bestDistance) {
       prev.bestDistance = distance;
+      prev.bestRef = {
+        source: ref.source,
+        owner: ref.owner ?? null,
+        photoId: ref.photoId ?? null,
+        faceId: ref.faceId ?? null,
+        personId: ref.personId ?? null,
+        externalEntityId: ref.externalEntityId ?? null,
+      };
     }
 
     if (ref.source === "tagged" && distance < threshold) {
@@ -296,6 +305,7 @@ export function suggestPerson(descriptor, references, threshold = DEFAULT_MATCH_
       personId: null,
       externalEntityId: firstExternal.externalEntityId,
       distance: firstExternal.bestDistance,
+      matchReference: firstExternal.bestRef ?? null,
     };
   }
 
@@ -303,6 +313,7 @@ export function suggestPerson(descriptor, references, threshold = DEFAULT_MATCH_
     personId: top.personId ?? null,
     externalEntityId: top.externalEntityId ?? null,
     distance: top.bestDistance,
+    matchReference: top.bestRef ?? null,
   };
 }
 
@@ -319,6 +330,7 @@ export function suggestPersonsForFaces(faces, references, threshold = DEFAULT_MA
       suggestedPersonId: match.personId ?? undefined,
       suggestedExternalEntityId: match.externalEntityId ?? undefined,
       suggestDistance: match.distance,
+      suggestedMatchReference: match.matchReference ?? undefined,
     };
   });
 }

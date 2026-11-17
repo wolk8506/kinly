@@ -3,21 +3,20 @@ import {
   Drawer,
   Box,
   Typography,
-  Button,
   Stack,
-  TextField,
-  Autocomplete,
+  InputBase,
   Divider,
   IconButton,
 } from "@mui/material";
-import { alpha, useTheme } from "@mui/material/styles";
+import { useTheme } from "@mui/material/styles";
 import FaceRetouchingNaturalIcon from "@mui/icons-material/FaceRetouchingNatural";
 import CalendarMonthIcon from "@mui/icons-material/CalendarMonth";
-import PlaceOutlinedIcon from "@mui/icons-material/PlaceOutlined";
-import EditIcon from "@mui/icons-material/Edit";
 import CropIcon from "@mui/icons-material/Crop";
+import EditIcon from "@mui/icons-material/Edit";
+import InsertDriveFileOutlinedIcon from "@mui/icons-material/InsertDriveFileOutlined";
 import PhotoLibraryIcon from "@mui/icons-material/PhotoLibrary";
-import HashtagInput from "../components/HashtagInput";
+import LocationArrowFillIcon from "../components/svg/LocationArrowFillIcon";
+import PhotoCaptionBlock from "../components/PhotoCaptionBlock";
 import CustomDatePickerDialog from "../components/CustomDatePickerDialog";
 import LocationPickerDialog from "../components/Dialog/LocationPickerDialog";
 import { usePhotoInspectorStore } from "../store/usePhotoInspectorStore";
@@ -36,29 +35,20 @@ import {
   removeAttendeeFromPhoto,
 } from "../utils/photoFaces";
 import PhotoAttendeesList from "../components/PhotoAttendeesList";
+import PhotoOwnerField from "../components/PhotoOwnerField";
 import { syncReferencesAfterPhotoSave } from "../utils/faceIndex";
+import { formatShortAddress } from "../utils/address";
+import CustomSwitch from "../components/CustomSwitch";
 import {
   inspectorDrawerTransitionProps,
   inspectorPaperSx,
 } from "./inspectorPanelTransition";
-
-function FieldLabel({ children }) {
-  return (
-    <Typography
-      variant="caption"
-      sx={{ color: "text.secondary", fontWeight: 700, mb: 0.5, display: "block" }}
-    >
-      {children}
-    </Typography>
-  );
-}
 
 // Правая панель-инспектор фото. Редактирует метаданные выбранного фото
 // (заголовок, описание, люди, дата, место, имя файла). Разметка лиц и превью
 // открываются в модальном редакторе (кнопка «Лица и превью»).
 export default function PhotoInspectorPanel({ allPeople = [] }) {
   const theme = useTheme();
-  const isDark = theme.palette.mode === "dark";
   const addNotification = useNotificationStore((s) => s.addNotification);
 
   // Список фото и его сеттер берём из стора: активная галерея их регистрирует,
@@ -87,6 +77,8 @@ export default function PhotoInspectorPanel({ allPeople = [] }) {
   const [newFilename, setNewFilename] = useState("");
   const [datePickerOpen, setDatePickerOpen] = useState(false);
   const [locationPickerOpen, setLocationPickerOpen] = useState(false);
+  const [geoEnabled, setGeoEnabled] = useState(false);
+  const [previewThumbUrl, setPreviewThumbUrl] = useState("");
 
   const photo = useMemo(
     () => photos.find((p) => p.id === selectedId) || null,
@@ -108,6 +100,79 @@ export default function PhotoInspectorPanel({ allPeople = [] }) {
   useEffect(() => {
     if (photo) setNewFilename(photo.filename || "");
   }, [photo?.id]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    if (!draft) {
+      setGeoEnabled(false);
+      return;
+    }
+    const hasGeoData =
+      Boolean((draft.locationName || "").trim()) ||
+      draft.lat != null ||
+      draft.lng != null;
+    setGeoEnabled(hasGeoData);
+  }, [photo?.id]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Для точек без названия места (старые фото, неудачный reverse при
+  // сохранении) подтягиваем адрес через reverse-геокодинг.
+  useEffect(() => {
+    if (!draft) return undefined;
+    const la = Number(draft.lat);
+    const ln = Number(draft.lng);
+    if (!Number.isFinite(la) || !Number.isFinite(ln)) return undefined;
+    if ((draft.locationName || "").trim()) return undefined;
+    let cancelled = false;
+    (async () => {
+      try {
+        const rev = await window.geoAPI?.reverse?.(la, ln);
+        const name = formatShortAddress(rev) || rev?.name || "";
+        if (cancelled || !name) return;
+        const cur = usePhotoInspectorStore.getState().draft;
+        if (
+          !cur ||
+          (cur.locationName || "").trim() ||
+          Number(cur.lat) !== la ||
+          Number(cur.lng) !== ln
+        ) {
+          return;
+        }
+        update({ locationName: name });
+        scheduleSave();
+      } catch {
+        // ignore
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [photo?.id, draft?.lat, draft?.lng, draft?.locationName]);
+
+  useEffect(() => {
+    let mounted = true;
+
+    async function loadPreviewThumb() {
+      if (!photo?.owner || !photo?.filename) {
+        if (mounted) setPreviewThumbUrl("");
+        return;
+      }
+      try {
+        const path = await window.photoAPI?.getPath?.(
+          photo.owner,
+          photo.filename,
+          "thumbs",
+        );
+        if (mounted) setPreviewThumbUrl(path || "");
+      } catch {
+        if (mounted) setPreviewThumbUrl("");
+      }
+    }
+
+    loadPreviewThumb();
+    return () => {
+      mounted = false;
+    };
+  }, [photo?.owner, photo?.filename]);
 
   const handleSave = async () => {
     // Всегда берём актуальный черновик из стора: позволяет сохранять
@@ -254,6 +319,7 @@ export default function PhotoInspectorPanel({ allPeople = [] }) {
         type: "success",
         category: "photo",
       });
+      return true;
     } catch (e) {
       console.error("Save location failed", e);
       addNotification({
@@ -263,10 +329,10 @@ export default function PhotoInspectorPanel({ allPeople = [] }) {
         type: "error",
         category: "photo",
       });
+      return false;
     }
   };
 
-  const peopleOptions = allPeople;
 
   const locationText = draft?.locationName?.trim()
     ? draft.locationName
@@ -299,7 +365,7 @@ export default function PhotoInspectorPanel({ allPeople = [] }) {
           }}
         >
           {!photo || !draft ? (
-            <Box sx={{ p: 2 }}>
+            <Box sx={{ p: "10px" }}>
               <Box sx={groupSx}>
                 <SettingsRow
                   icon={
@@ -315,86 +381,41 @@ export default function PhotoInspectorPanel({ allPeople = [] }) {
             </Box>
           ) : (
             <>
-              <Box sx={{ flexGrow: 1, overflowY: "auto", p: 2 }}>
-                <Stack spacing={2}>
-                  <TextField
-                    fullWidth
-                    size="small"
-                    variant="outlined"
-                    placeholder="Добавить название"
-                    value={draft.title}
-                    onChange={(e) => update({ title: e.target.value })}
-                    onBlur={() => {
+              <Box sx={{ flexGrow: 1, overflowY: "auto", p: "10px" }}>
+                <Stack spacing={1}>
+                  <PhotoCaptionBlock
+                    title={draft.title ?? ""}
+                    description={draft.description ?? ""}
+                    onTitleChange={(val) => update({ title: val })}
+                    onDescriptionChange={(val) => update({ description: val })}
+                    tagSuggestions={uniqueTags}
+                    onTitleBlur={() => {
                       if (usePhotoInspectorStore.getState().dirty) scheduleSave();
                     }}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter") {
-                        e.preventDefault();
-                        e.currentTarget.blur();
-                      } else if (e.key === "Escape") {
-                        e.stopPropagation();
-                        revertField("title", photo.title ?? "");
-                        e.currentTarget.blur();
-                      }
-                    }}
-                    sx={{
-                      "& .MuiOutlinedInput-root": {
-                        borderRadius: "8px",
-                        px: "6px",
-                        "& fieldset": { border: "none" },
-                        "&:hover": { bgcolor: "action.hover" },
-                        "&.Mui-focused": { bgcolor: "action.hover" },
-                      },
-                    }}
-                  />
-
-                  <HashtagInput
-                    value={draft.description}
-                    onChange={(val) => update({ description: val })}
-                    suggestions={uniqueTags}
-                    label="Описание и #теги"
-                    onBlur={() => {
+                    onDescriptionBlur={() => {
                       if (usePhotoInspectorStore.getState().dirty) scheduleSave();
                     }}
-                    onEscape={() => revertField("description", photo.description ?? "")}
-                  />
-
-                  <Divider sx={{ opacity: 0.5 }} />
-
-                  <Autocomplete
-                    size="small"
-                    options={peopleOptions}
-                    getOptionLabel={(p) => `${p.id} :: ${getPersonLabel(p)}`}
-                    isOptionEqualToValue={(a, b) => a?.id === b?.id}
-                    value={
-                      peopleOptions.find((p) => p.id === draft.owner) || null
+                    onTitleEscape={() => revertField("title", photo.title ?? "")}
+                    onDescriptionEscape={() =>
+                      revertField("description", photo.description ?? "")
                     }
-                    onChange={(_, v) => {
-                      update({ owner: v ? v.id : null });
+                  />
+
+                  <PhotoOwnerField
+                    allPeople={allPeople}
+                    ownerId={draft.owner ?? null}
+                    label="Владелец (папка) / Люди на фото"
+                    onChange={(id) => {
+                      update({ owner: id });
                       scheduleSave();
                     }}
-                    renderInput={(params) => (
-                      <TextField
-                        {...params}
-                        label="Владелец (папка)"
-                        variant="outlined"
-                        sx={{
-                          "& .MuiInputBase-input": { fontSize: "0.8rem" },
-                          "& .MuiInputLabel-root": { fontSize: "0.75rem" },
-                        }}
-                        slotProps={{
-                          ...params.slotProps,
-
-                          inputLabel: {
-                            ...params.slotProps.inputLabel,
-                            shrink: true,
-                          }
-                        }}
-                      />
-                    )}
+                    onInteractionEnd={() => {
+                      if (usePhotoInspectorStore.getState().dirty) scheduleSave();
+                    }}
                   />
 
                   <PhotoAttendeesList
+                    label=""
                     allPeople={allPeople}
                     allExternal={allExternal}
                     peopleIds={draft.people || []}
@@ -428,146 +449,292 @@ export default function PhotoInspectorPanel({ allPeople = [] }) {
                     }}
                   />
 
-                  <Divider sx={{ opacity: 0.5 }} />
-
-                  <Stack
-                    direction="row"
-                    spacing={1}
-                    sx={{
-                      alignItems: "center",
-                      justifyContent: "space-between"
-                    }}>
-                    <FieldLabel>Дата снимка</FieldLabel>
-                    <Box
-                      onClick={() => setDatePickerOpen(true)}
-                      sx={{
-                        display: "flex",
-                        alignItems: "center",
-                        gap: 0.5,
-                        py: "2px",
-                        px: "6px",
-                        borderRadius: "8px",
-                        cursor: "pointer",
-                        "&:hover": { bgcolor: "action.hover" },
-                      }}
-                    >
-                      <CalendarMonthIcon
-                        sx={{ color: "action.active", fontSize: 18 }}
-                      />
-                      <Typography
-                        variant="body2"
-                        sx={{
-                          color: draft.datePhoto
-                            ? "text.primary"
-                            : "text.secondary",
-                        }}
-                      >
-                        {draft.datePhoto || "Указать дату"}
-                      </Typography>
-                    </Box>
-                  </Stack>
-
-                  <Box
-                    onClick={() => setLocationPickerOpen(true)}
-                    sx={{
-                      display: "flex",
-                      alignItems: "flex-start",
-                      gap: 0.5,
-                      p: "4px 6px",
-                      mx: "-6px",
-                      borderRadius: "8px",
-                      cursor: "pointer",
-                      "&:hover": { bgcolor: "action.hover" },
-                    }}
-                  >
-                    <PlaceOutlinedIcon
-                      sx={{
-                        fontSize: 16,
-                        mt: "2px",
-                        color: locationText ? "text.secondary" : "text.disabled",
-                      }}
-                    />
+                  <Box sx={{ mb: "12px" }}>
                     <Typography
-                      variant="body2"
+                      variant="caption"
                       sx={{
-                        flex: 1,
-                        whiteSpace: "normal",
-                        wordBreak: "break-word",
-                        color: locationText ? "text.primary" : "text.secondary",
+                        color: "text.secondary",
+                        fontWeight: 700,
+                        display: "block",
+                        mb: "4px",
                       }}
                     >
-                      {locationText || "Назначить геопозицию"}
+                      Дата и место
                     </Typography>
-                  </Box>
 
-                  <Box
-                    sx={{
-                      p: 1.5,
-                      borderRadius: "12px",
-                      bgcolor: isDark
-                        ? alpha("#000", 0.15)
-                        : alpha(theme.palette.action.hover, 0.05),
-                      border: "1px solid",
-                      borderColor: rename ? "primary.main" : "divider",
-                      borderStyle: rename ? "solid" : "dashed",
-                    }}
-                  >
-                    <Stack direction="row" spacing={1} sx={{
-                      alignItems: "center"
-                    }}>
-                      <TextField
-                        label="Имя файла на диске"
-                        value={rename ? newFilename : photo.filename}
-                        onChange={(e) => setNewFilename(e.target.value)}
-                        onBlur={() => {
-                          if (rename) scheduleSave();
-                        }}
-                        onKeyDown={(e) => {
-                          if (e.key === "Enter") {
-                            e.preventDefault();
-                            e.currentTarget.blur();
-                          } else if (e.key === "Escape") {
-                            e.stopPropagation();
-                            setNewFilename(photo.filename || "");
-                            setRename(false);
-                          }
-                        }}
-                        size="small"
-                        fullWidth
-                        variant="standard"
-                        slotProps={{
-                          input: {
-                            readOnly: !rename,
-                            disableUnderline: !rename,
-                            sx: {
-                              fontSize: "0.8rem",
-                              fontWeight: 500,
-                              fontFamily: "monospace",
-                            },
-                          }
-                        }}
-                      />
-                      <IconButton
-                        size="small"
-                        onClick={() => setRename(!rename)}
+                      <Box
                         sx={{
-                          bgcolor: rename ? "primary.main" : "transparent",
-                          color: rename
-                            ? "primary.contrastText"
-                            : "action.active",
+                          borderRadius: "12px",
+                          bgcolor: (t) =>
+                            t.palette.mode === "dark"
+                              ? "rgba(255,255,255,0.06)"
+                              : "rgba(0,0,0,0.04)",
+                          overflow: "hidden",
                         }}
                       >
-                        <EditIcon fontSize="small" />
-                      </IconButton>
-                    </Stack>
+                        <Box
+                          onClick={() => setDatePickerOpen(true)}
+                          sx={{
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "space-between",
+                            px: "12px",
+                            py: "9px",
+                            gap: 1,
+                            cursor: "pointer",
+                          }}
+                        >
+                          <Stack direction="row" spacing="12px" sx={{ alignItems: "center" }}>
+                            <CalendarMonthIcon sx={{ color: "text.secondary", fontSize: 18 }} />
+                            <Typography
+                              sx={{
+                                fontSize: "0.815rem",
+                                fontWeight: 600,
+                                lineHeight: 1.35,
+                                color: "text.primary",
+                              }}
+                            >
+                              Дата снимка
+                            </Typography>
+                          </Stack>
+
+                          <Typography
+                            sx={{
+                              fontSize: "0.815rem",
+                              fontWeight: 500,
+                              lineHeight: 1.35,
+                              color: draft.datePhoto ? "text.primary" : "text.secondary",
+                            }}
+                          >
+                            {draft.datePhoto || "Указать дату"}
+                          </Typography>
+                        </Box>
+                      </Box>
+
+                      <Box
+                        sx={{
+                          mt: "12px",
+                          borderRadius: "12px",
+                          bgcolor: (t) =>
+                            t.palette.mode === "dark"
+                              ? "rgba(255,255,255,0.06)"
+                              : "rgba(0,0,0,0.04)",
+                          overflow: "hidden",
+                        }}
+                      >
+                        <Stack
+                          direction="row"
+                          sx={{
+                            alignItems: "center",
+                            justifyContent: "space-between",
+                            px: "12px",
+                            py: "9px",
+                            gap: 1,
+                          }}
+                        >
+                          <Stack direction="row" spacing="12px" sx={{ alignItems: "center" }}>
+                            <LocationArrowFillIcon sx={{ color: "text.secondary", fontSize: 18 }} />
+                            <Typography
+                              sx={{
+                                fontSize: "0.815rem",
+                                fontWeight: 600,
+                                lineHeight: 1.35,
+                                color: "text.primary",
+                              }}
+                            >
+                              Геопозиция
+                            </Typography>
+                          </Stack>
+                          <CustomSwitch
+                            checked={geoEnabled}
+                            onChange={async (e) => {
+                              const nextChecked = e.target.checked;
+                              if (nextChecked) {
+                                setGeoEnabled(true);
+                                return;
+                              }
+
+                              const prev = {
+                                lat: draft.lat ?? null,
+                                lng: draft.lng ?? null,
+                                locationName: draft.locationName || "",
+                              };
+
+                              setGeoEnabled(false);
+                              setLocation({ lat: null, lng: null, locationName: "" });
+                              const saved = await handleSaveLocation({
+                                lat: null,
+                                lng: null,
+                                name: "",
+                              });
+                              if (!saved) {
+                                setGeoEnabled(true);
+                                setLocation(prev);
+                              }
+                            }}
+                            sx={{
+                              "& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track": {
+                                backgroundColor: theme.palette.error.main,
+                              },
+                            }}
+                          />
+                        </Stack>
+
+                        {geoEnabled && (
+                          <>
+                            <Divider
+                              sx={{
+                                opacity: 0.35,
+                                mx: 1.25,
+                                borderColor: "divider",
+                              }}
+                            />
+                            <Box
+                              onClick={() => setLocationPickerOpen(true)}
+                              sx={{
+                                pl: "42px",
+                                pr: "12px",
+                                py: "9px",
+                                cursor: "pointer",
+                              }}
+                            >
+                              <Typography
+                                sx={{
+                                  fontSize: "0.815rem",
+                                  lineHeight: 1.35,
+                                  fontWeight: 500,
+                                  color: locationText ? "text.primary" : "text.secondary",
+                                }}
+                              >
+                                {locationText || "Введите место"}
+                              </Typography>
+                            </Box>
+                          </>
+                        )}
+                      </Box>
                   </Box>
 
-                  <Stack direction="row" spacing={1}>
-                    <Button
-                      fullWidth
-                      variant="outlined"
-                      size="small"
-                      startIcon={<FaceRetouchingNaturalIcon />}
+                  <Box>
+                    <Typography
+                      variant="caption"
+                      sx={{
+                        color: "text.secondary",
+                        fontWeight: 700,
+                        display: "block",
+                        mb: "4px",
+                      }}
+                    >
+                      Имя файла, лица и превью
+                    </Typography>
+                    <Box
+                      sx={{
+                        borderRadius: "12px",
+                        bgcolor: (t) =>
+                          t.palette.mode === "dark"
+                            ? "rgba(255,255,255,0.06)"
+                            : "rgba(0,0,0,0.04)",
+                        overflow: "hidden",
+                      }}
+                    >
+                      <Stack
+                        direction="row"
+                        sx={{
+                          alignItems: "center",
+                          justifyContent: "space-between",
+                          px: "12px",
+                          py: "9px",
+                          gap: 1,
+                        }}
+                      >
+                        <Stack direction="row" spacing="12px" sx={{ alignItems: "center" }}>
+                          <InsertDriveFileOutlinedIcon sx={{ color: "text.secondary", fontSize: 18 }} />
+                          <Typography
+                            sx={{
+                              fontSize: "0.815rem",
+                              fontWeight: 600,
+                              lineHeight: 1.35,
+                              color: "text.primary",
+                            }}
+                          >
+                            Имя файла на диске
+                          </Typography>
+                        </Stack>
+                        <IconButton
+                          size="small"
+                          onClick={() => {
+                            if (rename) {
+                              setRename(false);
+                              return;
+                            }
+                            setNewFilename(photo.filename || "");
+                            setRename(true);
+                          }}
+                          sx={{
+                            p: 0,
+                            bgcolor: rename ? "primary.main" : "transparent",
+                            color: rename
+                              ? "primary.contrastText"
+                              : "action.active",
+                          }}
+                        >
+                          <EditIcon sx={{ fontSize: 18 }} />
+                        </IconButton>
+                      </Stack>
+
+                      {rename && (
+                        <>
+                          <Divider
+                            sx={{
+                              opacity: 0.35,
+                              mx: 1.25,
+                              borderColor: "divider",
+                            }}
+                          />
+                          <Box
+                            sx={{
+                              pl: "42px",
+                              pr: "12px",
+                              py: "9px",
+                            }}
+                          >
+                            <InputBase
+                              autoFocus
+                              fullWidth
+                              value={newFilename}
+                              onChange={(e) => setNewFilename(e.target.value)}
+                              onBlur={() => {
+                                scheduleSave();
+                              }}
+                              onKeyDown={(e) => {
+                                if (e.key === "Enter") {
+                                  e.preventDefault();
+                                  e.currentTarget.blur();
+                                  setRename(false);
+                                } else if (e.key === "Escape") {
+                                  e.stopPropagation();
+                                  setNewFilename(photo.filename || "");
+                                  setRename(false);
+                                }
+                              }}
+                              sx={{
+                                width: "100%",
+                                fontSize: "0.815rem",
+                                lineHeight: 1.35,
+                                fontWeight: 500,
+                                fontFamily: "monospace",
+                                color: "text.primary",
+                                "& input": { p: 0 },
+                              }}
+                            />
+                          </Box>
+                        </>
+                      )}
+                    </Box>
+
+                    <Stack spacing="12px" sx={{ mt: "12px" }}>
+                    <Box
+                      component="button"
+                      type="button"
                       onClick={async () => {
                         let target = photo;
                         if (usePhotoInspectorStore.getState().dirty) {
@@ -577,15 +744,49 @@ export default function PhotoInspectorPanel({ allPeople = [] }) {
                         }
                         actions.openFaces?.(target);
                       }}
-                      sx={{ textTransform: "none" }}
+                      sx={{
+                        width: "100%",
+                        border: "none",
+                        textAlign: "left",
+                        borderRadius: "12px",
+                        bgcolor: (t) =>
+                          t.palette.mode === "dark"
+                            ? "rgba(255,255,255,0.06)"
+                            : "rgba(0,0,0,0.04)",
+                        px: "12px",
+                        py: "9px",
+                        cursor: "pointer",
+                      }}
                     >
-                      {`Лица (${facesCount})`}
-                    </Button>
-                    <Button
-                      fullWidth
-                      variant="outlined"
-                      size="small"
-                      startIcon={<CropIcon />}
+                      <Stack direction="row" sx={{ alignItems: "center", justifyContent: "space-between" }}>
+                        <Stack direction="row" spacing="12px" sx={{ alignItems: "center" }}>
+                          <FaceRetouchingNaturalIcon sx={{ color: "text.secondary", fontSize: 18 }} />
+                          <Typography
+                            sx={{
+                              fontSize: "0.815rem",
+                              fontWeight: 600,
+                              lineHeight: 1.35,
+                              color: "text.primary",
+                            }}
+                          >
+                            Лица
+                          </Typography>
+                        </Stack>
+                        <Typography
+                          sx={{
+                            fontSize: "0.815rem",
+                            fontWeight: 500,
+                            lineHeight: 1.35,
+                            color: "text.secondary",
+                          }}
+                        >
+                          {facesCount}
+                        </Typography>
+                      </Stack>
+                    </Box>
+                    <Box
+                      component="button"
+                      type="button"
                       onClick={async () => {
                         let target = photo;
                         if (usePhotoInspectorStore.getState().dirty) {
@@ -595,11 +796,51 @@ export default function PhotoInspectorPanel({ allPeople = [] }) {
                         }
                         actions.openPreview?.(target);
                       }}
-                      sx={{ textTransform: "none" }}
+                      sx={{
+                        width: "100%",
+                        border: "none",
+                        textAlign: "left",
+                        borderRadius: "12px",
+                        bgcolor: (t) =>
+                          t.palette.mode === "dark"
+                            ? "rgba(255,255,255,0.06)"
+                            : "rgba(0,0,0,0.04)",
+                        px: "12px",
+                        py: "9px",
+                        cursor: "pointer",
+                      }}
                     >
-                      Превью
-                    </Button>
+                      <Stack direction="row" sx={{ alignItems: "center", justifyContent: "space-between" }}>
+                        <Stack direction="row" spacing="12px" sx={{ alignItems: "center" }}>
+                          <CropIcon sx={{ color: "text.secondary", fontSize: 18 }} />
+                          <Typography
+                            sx={{
+                              fontSize: "0.815rem",
+                              fontWeight: 600,
+                              lineHeight: 1.35,
+                              color: "text.primary",
+                            }}
+                          >
+                            Превью
+                          </Typography>
+                        </Stack>
+                        <Box
+                          component="img"
+                          src={previewThumbUrl || undefined}
+                          alt=""
+                          sx={{
+                            width: "auto",
+                            height: 18,
+                            borderRadius: "4px",
+                            minWidth: 18,
+                            bgcolor: "action.hover",
+                            objectFit: "cover",
+                          }}
+                        />
+                      </Stack>
+                    </Box>
                   </Stack>
+                  </Box>
                 </Stack>
               </Box>
             </>

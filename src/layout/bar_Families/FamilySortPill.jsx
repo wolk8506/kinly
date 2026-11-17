@@ -17,7 +17,7 @@ import {
   FAMILY_SORT_OPTIONS,
   familySortLabel,
 } from "../../utils/families/sortFamilies";
-import { popoverArrowSx } from "../../theme/popoverArrow";
+import GlassBubbleLayers from "../../components/GlassBubbleLayers";
 import { useToolbarButtonGroupHitSx } from "../../components/ToolbarCapsuleContext";
 import { TOOLBAR_HIT, TOOLBAR_MENU } from "../toolbarTokens";
 
@@ -84,25 +84,20 @@ export default function FamilySortPill({ value = "date", onChange, nested = fals
       slotProps={{
         paper: {
           sx: {
-            mt: 1.5,
+            mt: 2,
             minWidth: 220,
-            borderRadius: TOOLBAR_MENU.paperRadiusPx,
+            borderRadius: 0,
             overflow: "visible",
+            background: "none",
             backgroundImage: "none",
-            bgcolor: (theme) =>
-              theme.palette.mode === "dark" ? "#1E1E1E" : "#FFFFFF",
-            border: "1px solid",
-            borderColor: "divider",
-            boxShadow: (theme) =>
-              theme.palette.mode === "dark"
-                ? "0 16px 36px rgba(0, 0, 0, 0.5)"
-                : "0 16px 36px rgba(0, 0, 0, 0.16)",
-            "&::before": popoverArrowSx(),
+            boxShadow: "none",
+            border: "none",
           },
         },
         list: { sx: { py: 0.5, px: 0.5 } },
       }}
     >
+      <GlassBubbleLayers />
       <Box sx={{ position: "relative", zIndex: 1 }}>
         <Typography
           variant="overline"

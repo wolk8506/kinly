@@ -1,4 +1,5 @@
 const { ipcMain, app, shell } = require("electron");
+const { spawn } = require("child_process");
 const { getMainWindow } = require("./mainWindow.cjs");
 const log = require("./logger.cjs").createLogger("autoUpdater");
 
@@ -136,6 +137,44 @@ function launchInstaller(filePath) {
   });
 }
 
+// После запуска установщика приложение завершается, поэтому папку
+// GenealogyUpdater удаляет отдельный отцепленный процесс: на macOS/Linux —
+// через несколько секунд, на Windows — с повторами, пока установщик
+// (запущенный exe) не отпустит файл.
+function scheduleUpdaterDirCleanup(filePath) {
+  const dir = path.dirname(filePath);
+  const psDir = dir.replace(/'/g, "''");
+  const shDir = dir.replace(/'/g, "'\\''");
+
+  let cmd;
+  let args;
+  if (process.platform === "win32") {
+    cmd = "powershell.exe";
+    args = [
+      "-NoProfile",
+      "-WindowStyle",
+      "Hidden",
+      "-Command",
+      `$d='${psDir}'; for($i=0;$i -lt 60;$i++){ try{ Remove-Item -LiteralPath $d -Recurse -Force -ErrorAction Stop; break } catch { Start-Sleep -Seconds 10 } }`,
+    ];
+  } else {
+    cmd = "/bin/sh";
+    args = ["-c", `sleep 5; rm -rf -- '${shDir}'`];
+  }
+
+  try {
+    const child = spawn(cmd, args, {
+      detached: true,
+      stdio: "ignore",
+      windowsHide: true,
+    });
+    child.unref();
+    log.info("🧹 очистка папки обновлений запланирована:", dir);
+  } catch (err) {
+    log.warn("⚠️ не удалось запланировать очистку папки обновлений:", err.message);
+  }
+}
+
 function setupAutoUpdater(win) {
   log.info("🛠 setupAutoUpdater инициализирован");
   let updateInfo = null;
@@ -219,6 +258,7 @@ function setupAutoUpdater(win) {
     try {
       log.info("🚀 запуск установщика:", filePath);
       await launchInstaller(filePath);
+      scheduleUpdaterDirCleanup(filePath);
     } catch (err) {
       fail(err.message);
       return;
@@ -234,6 +274,10 @@ function setupAutoUpdater(win) {
   const WEEK = 7 * 24 * 60 * 60 * 1000;
   fs.readdir(tempDir, { withFileTypes: true }, (err, entries) => {
     if (err) return;
+    if (entries.length === 0) {
+      fs.rmdir(tempDir, () => {});
+      return;
+    }
     entries.forEach((entry) => {
       const filePath = path.join(tempDir, entry.name);
       fs.stat(filePath, (statErr, stats) => {

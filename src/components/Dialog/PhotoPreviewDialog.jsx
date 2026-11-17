@@ -7,6 +7,7 @@ import DialogActionButton, {
 } from "./DialogActionButton";
 import { PhotoThumbCropPanel } from "../PhotoThumbCropTools";
 import { loadImage, cropToThumbWebp } from "../../utils/thumbCrop";
+import { glassPaperSx, glassBackdropSx } from "./glassDialog";
 
 const ZOOM_MAX = 3;
 
@@ -123,14 +124,14 @@ export default function PhotoPreviewDialog({ open, meta, onClose, setPhotoPaths 
       onClose={onClose}
       maxWidth={false}
       slotProps={{
+        backdrop: { sx: glassBackdropSx },
         paper: {
-          sx: {
-            borderRadius: "24px",
-            backgroundImage: "none",
+          sx: (t) => ({
+            ...glassPaperSx(t),
             width: 560,
             maxWidth: "94vw",
             overflow: "hidden",
-          },
+          }),
         }
       }}
     >

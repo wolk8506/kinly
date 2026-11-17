@@ -1,14 +1,25 @@
 import React, { useContext, useEffect, useState } from "react";
-import { Card, Box, Typography, Stack, Slider, Divider } from "@mui/material";
+import {
+  Card,
+  Box,
+  Typography,
+  Stack,
+  Slider,
+  Divider,
+  Menu,
+  MenuItem,
+} from "@mui/material";
 
 import DisplaySettingsIcon from "@mui/icons-material/DisplaySettings";
 import Brightness4Icon from "@mui/icons-material/Brightness4";
+import MapIcon from "@mui/icons-material/Map";
 import NewReleasesIcon from "@mui/icons-material/NewReleases";
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
 
 import { useSettingsStore } from "../../store/useSettingsStore";
 import { ThemeContext } from "../../theme/ThemeContext.js";
 import CustomSwitch from "../../components/CustomSwitch";
+import ChevronUpChevronDownIcon from "../../components/svg/ChevronUpChevronDownIcon";
 import {
   groupSx,
   sectionLabelSx,
@@ -25,6 +36,12 @@ const edgeLabelSx = {
   color: "text.primary",
   lineHeight: 1.4,
 };
+
+const MAP_THEME_OPTIONS = [
+  { value: "auto", label: "Авто" },
+  { value: "light", label: "Светлая" },
+  { value: "dark", label: "Тёмная" },
+];
 
 function SliderRow({ icon, title, subtitle, valueLabel, startLabel, endLabel, slider }) {
   return (
@@ -97,10 +114,15 @@ export const GeneralSettingsCard = ({ cardStyle }) => {
   );
 
   const [tempSettings, setTempSettings] = useState(appSettings);
+  const [mapThemeAnchor, setMapThemeAnchor] = useState(null);
 
   useEffect(() => {
     setTempSettings(appSettings);
   }, [appSettings]);
+
+  const mapThemeValue = tempSettings.mapTheme || "auto";
+  const mapThemeLabel =
+    MAP_THEME_OPTIONS.find((o) => o.value === mapThemeValue)?.label || "Авто";
 
   return (
     <Card
@@ -164,7 +186,6 @@ export const GeneralSettingsCard = ({ cardStyle }) => {
                       onChange={(e) => setAuto(e.target.checked)}
                     />
                   }
-                  onClick={() => setAuto(!auto)}
                 />
                 <Box
                   sx={{
@@ -184,6 +205,47 @@ export const GeneralSettingsCard = ({ cardStyle }) => {
                   />
                 </Box>
               </Stack>
+            </Box>
+          </Box>
+
+          <Box>
+            <Typography sx={sectionLabelSx}>Карта</Typography>
+            <Box sx={groupSx}>
+              <SettingsRow
+                icon={
+                  <RowIcon bg="teal">
+                    <MapIcon sx={{ fontSize: 18 }} />
+                  </RowIcon>
+                }
+                title="Цвет карты"
+                subtitle="Подложка карты независимо от темы приложения"
+                onClick={(e) => setMapThemeAnchor(e.currentTarget)}
+                trailing={
+                  <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                    <Typography
+                      variant="body2"
+                      sx={{ color: "text.secondary", flexShrink: 0 }}
+                    >
+                      {mapThemeLabel}
+                    </Typography>
+                    <Box
+                      sx={{
+                        width: 18,
+                        height: 18,
+                        borderRadius: "50%",
+                        display: "grid",
+                        placeItems: "center",
+                        bgcolor: "action.hover",
+                        flexShrink: 0,
+                      }}
+                    >
+                      <ChevronUpChevronDownIcon
+                        sx={{ fontSize: 12, color: "text.secondary" }}
+                      />
+                    </Box>
+                  </Box>
+                }
+              />
             </Box>
           </Box>
 
@@ -269,6 +331,41 @@ export const GeneralSettingsCard = ({ cardStyle }) => {
           </Box>
         </Stack>
       </Box>
+
+      <Menu
+        anchorEl={mapThemeAnchor}
+        open={Boolean(mapThemeAnchor)}
+        onClose={() => setMapThemeAnchor(null)}
+        anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+        transformOrigin={{ vertical: "top", horizontal: "right" }}
+        slotProps={{
+          paper: {
+            sx: {
+              mt: 0.5,
+              minWidth: 180,
+              borderRadius: "12px",
+            },
+          },
+          list: { dense: true, sx: { py: 0.5 } },
+        }}
+      >
+        {MAP_THEME_OPTIONS.map((option) => (
+          <MenuItem
+            key={option.value}
+            selected={option.value === mapThemeValue}
+            onClick={() => {
+              setTempSettings((prev) => ({ ...prev, mapTheme: option.value }));
+              updateAppSettings({ mapTheme: option.value });
+              setMapThemeAnchor(null);
+            }}
+            sx={{ borderRadius: "8px", mx: 0.5 }}
+          >
+            <Typography variant="body2" sx={{ fontSize: "0.8125rem" }}>
+              {option.label}
+            </Typography>
+          </MenuItem>
+        ))}
+      </Menu>
     </Card>
   );
 };

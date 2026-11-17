@@ -5,7 +5,6 @@ import {
   Button,
   Box,
   IconButton,
-  Tooltip,
   Divider,
   Chip,
   useTheme,
@@ -19,13 +18,14 @@ import CakeIcon from "@mui/icons-material/Cake";
 import { Link as RouterLink, useNavigate } from "react-router-dom";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
-import OpenInNewIcon from "@mui/icons-material/OpenInNew";
-import ChevronRightIcon from "@mui/icons-material/ChevronRight";
+import OpenInNewRoundedIcon from "@mui/icons-material/OpenInNewRounded";
 import PhotoCameraIcon from "@mui/icons-material/PhotoCamera";
 import PetsIcon from "@mui/icons-material/Pets";
 import PersonOutlineOutlinedIcon from "@mui/icons-material/PersonOutlineOutlined";
 import LinkIcon from "@mui/icons-material/Link";
 import ExternalEntityAvatar from "../../components/ExternalEntityAvatar";
+import PersonAvatar from "../../components/PersonAvatar";
+import DialogActionButton from "../../components/Dialog/DialogActionButton";
 import AvatarPreviewDialog from "../../components/Dialog/AvatarPreviewDialog";
 import AddExternalEntityDialog from "../../components/Dialog/AddExternalEntityDialog";
 import ExternalAvatarEditorDialog from "../../components/Dialog/ExternalAvatarEditorDialog";
@@ -34,23 +34,19 @@ import {
   getEntityTypeLabel,
   getExternalEntityLabel,
   getRelationTypeLabel,
+  getRelationGroupLabel,
   findExternalById,
   findPersonById,
 } from "../../utils/externalEntities";
 import { btnStyleBlue, btnStyleRed } from "../../components/ButtonStyle";
 import {
+  chevron,
   groupSx,
   RowDivider,
   RowIcon,
   SettingsRow,
   sectionLabelSx,
 } from "../Page_Settings/settingsUi";
-
-const panelIconBtnSx = {
-  border: "1px solid",
-  borderColor: "divider",
-  borderRadius: "8px",
-};
 
 export default function ExternalEntityDetail({
   entityId,
@@ -181,9 +177,295 @@ export default function ExternalEntityDetail({
 
   const isPet = entity.type === "pet";
 
+  const detailDialogs = (
+    <>
+      <AvatarPreviewDialog
+        open={avatarOpen}
+        onClose={() => setAvatarOpen(false)}
+        imageUrl={avatarPreviewUrl}
+        alt={entity.name || "Аватар"}
+        onEdit={() => {
+          setAvatarOpen(false);
+          setAvatarEditorOpen(true);
+        }}
+      />
+
+      <AddExternalEntityDialog
+        open={editOpen}
+        onClose={() => setEditOpen(false)}
+        entity={entity}
+        onSaved={handleSaved}
+      />
+
+      <ExternalAvatarEditorDialog
+        open={avatarEditorOpen}
+        onClose={() => setAvatarEditorOpen(false)}
+        entityId={entity.id}
+        onSaved={() => {
+          setAvatarEditorOpen(false);
+          setAvatarRefresh((r) => r + 1);
+          onEntityChanged?.();
+        }}
+      />
+    </>
+  );
+
+  if (compact) {
+    const hasContacts =
+      entity.notes ||
+      (!isPet && (entity.phone || entity.email || entity.address)) ||
+      entity.birthday;
+    const relations = entity.relations || [];
+
+    const relationGroups = [];
+    const relationGroupMap = new Map();
+    for (const rel of relations) {
+      const groupLabel = getRelationGroupLabel(rel.relationType);
+      if (!relationGroupMap.has(groupLabel)) {
+        relationGroupMap.set(groupLabel, []);
+        relationGroups.push(groupLabel);
+      }
+      relationGroupMap.get(groupLabel).push(rel);
+    }
+
+    const renderRelationRow = (rel) => {
+      const person = findPersonById(allPeople, rel.mainPersonId);
+      const external = findExternalById(allExternal, rel.mainExternalEntityId);
+      const isExternal = rel.targetKind === "external";
+      const target = isExternal ? external : person;
+      const targetName = isExternal
+        ? external
+          ? getExternalEntityLabel(external)
+          : `ID ${rel.mainExternalEntityId}`
+        : person
+          ? getPersonLabel(person)
+          : `ID ${rel.mainPersonId}`;
+      const onClick = isExternal
+        ? external
+          ? () => onSelectExternal?.(external.id)
+          : undefined
+        : person
+          ? () => navigate(`/person/${person.id}`)
+          : undefined;
+      return (
+        <SettingsRow
+          key={rel.id}
+          icon={
+            target ? (
+              isExternal ? (
+                <ExternalEntityAvatar
+                  entityId={rel.mainExternalEntityId}
+                  entity={external}
+                  size={32}
+                />
+              ) : (
+                <PersonAvatar
+                  personId={rel.mainPersonId}
+                  initials={getPersonLabel(person)}
+                  size={32}
+                />
+              )
+            ) : (
+              <RowIcon bg="gray">
+                <LinkIcon sx={{ fontSize: 18 }} />
+              </RowIcon>
+            )
+          }
+          title={targetName}
+          subtitle={[
+            getRelationTypeLabel(rel.relationType),
+            rel.dates ? `Период: ${rel.dates}` : null,
+            rel.notes,
+          ]
+            .filter(Boolean)
+            .join(" · ")}
+          onClick={onClick}
+          trailing={onClick ? chevron : undefined}
+        />
+      );
+    };
+
+    return (
+      <Box sx={{ p: 2 }}>
+        <Stack
+          direction="row"
+          spacing={1.5}
+          sx={{ alignItems: "center", px: 0.25, pt: 0.25 }}
+        >
+          <Box
+            onClick={() => setAvatarOpen(true)}
+            sx={{
+              cursor: "pointer",
+              borderRadius: "50%",
+              overflow: "hidden",
+              flexShrink: 0,
+              width: 52,
+              height: 52,
+              display: "flex",
+            }}
+          >
+            <ExternalEntityAvatar
+              entityId={entity.id}
+              entity={entity}
+              size={52}
+              refresh={avatarRefresh}
+            />
+          </Box>
+
+          <Box sx={{ minWidth: 0, flex: 1 }}>
+            <Typography
+              sx={{
+                fontSize: 16,
+                fontWeight: 700,
+                lineHeight: 1.25,
+                letterSpacing: "-0.015em",
+              }}
+            >
+              {entity.name}
+            </Typography>
+            <Typography
+              noWrap
+              sx={{ fontSize: 11.5, color: "text.secondary", lineHeight: 1.4 }}
+            >
+              {getEntityTypeLabel(entity.type)}
+              {entity.birthday ? ` · ${entity.birthday}` : ""}
+            </Typography>
+            <Typography
+              noWrap
+              sx={{ fontSize: 11.5, color: "text.disabled", lineHeight: 1.4 }}
+            >
+              {entity.id}
+              {entity.archived ? " · в архиве" : ""}
+            </Typography>
+          </Box>
+        </Stack>
+
+        <Stack direction="row" spacing={1} sx={{ mt: 2 }}>
+          <DialogActionButton
+            tone="primary"
+            startIcon={<EditIcon />}
+            onClick={() => setEditOpen(true)}
+            sx={{ flex: 1, minWidth: 0 }}
+          >
+            Редактировать
+          </DialogActionButton>
+          <DialogActionButton
+            tone="secondary"
+            startIcon={<OpenInNewRoundedIcon />}
+            onClick={() => navigate(`/external/${entity.id}`)}
+            sx={{ flex: 1, minWidth: 0 }}
+          >
+            Страница
+          </DialogActionButton>
+        </Stack>
+
+        <Stack spacing={2} sx={{ mt: 2 }}>
+          {hasContacts && (
+            <Box>
+              <Typography sx={sectionLabelSx}>Контакты</Typography>
+              <Box sx={groupSx}>
+                <Stack divider={<RowDivider />}>
+                  {!isPet && entity.phone && (
+                    <SettingsRow
+                      icon={
+                        <RowIcon bg="green">
+                          <PhoneIcon sx={{ fontSize: 18 }} />
+                        </RowIcon>
+                      }
+                      title={entity.phone}
+                      subtitle="Телефон"
+                    />
+                  )}
+                  {!isPet && entity.email && (
+                    <SettingsRow
+                      icon={
+                        <RowIcon bg="blue">
+                          <EmailIcon sx={{ fontSize: 18 }} />
+                        </RowIcon>
+                      }
+                      title={entity.email}
+                      subtitle="Email"
+                    />
+                  )}
+                  {!isPet && entity.address && (
+                    <SettingsRow
+                      icon={
+                        <RowIcon bg="orange">
+                          <HomeIcon sx={{ fontSize: 18 }} />
+                        </RowIcon>
+                      }
+                      title={entity.address}
+                      subtitle="Адрес"
+                    />
+                  )}
+                  {entity.birthday && (
+                    <SettingsRow
+                      icon={
+                        <RowIcon bg="pink">
+                          <CakeIcon sx={{ fontSize: 18 }} />
+                        </RowIcon>
+                      }
+                      title={entity.birthday}
+                      subtitle="День рождения"
+                    />
+                  )}
+                  {entity.notes && (
+                    <Box sx={{ px: 2, py: 1.25 }}>
+                      <Typography
+                        variant="caption"
+                        sx={{ color: "text.secondary" }}
+                      >
+                        Заметки
+                      </Typography>
+                      <Typography
+                        variant="body2"
+                        sx={{ whiteSpace: "pre-wrap", mt: 0.25 }}
+                      >
+                        {entity.notes}
+                      </Typography>
+                    </Box>
+                  )}
+                </Stack>
+              </Box>
+            </Box>
+          )}
+
+          {relations.length === 0 ? (
+            <Box>
+              <Typography sx={sectionLabelSx}>Связи</Typography>
+              <Box sx={groupSx}>
+                <SettingsRow
+                  icon={
+                    <RowIcon bg="gray">
+                      <LinkIcon sx={{ fontSize: 18 }} />
+                    </RowIcon>
+                  }
+                  title="Связи не указаны"
+                />
+              </Box>
+            </Box>
+          ) : (
+            relationGroups.map((groupLabel) => (
+              <Box key={groupLabel}>
+                <Typography sx={sectionLabelSx}>{groupLabel}</Typography>
+                <Box sx={groupSx}>
+                  <Stack divider={<RowDivider />}>
+                    {relationGroupMap.get(groupLabel).map(renderRelationRow)}
+                  </Stack>
+                </Box>
+              </Box>
+            ))
+          )}
+        </Stack>
+
+        {detailDialogs}
+      </Box>
+    );
+  }
+
   return (
-    <Box sx={{ p: compact ? 2 : { xs: 1, sm: 2 } }}>
-      <Stack direction={compact ? "column" : { xs: "column", sm: "row" }} spacing={2}>
+    <Box sx={{ p: { xs: 1, sm: 2 } }}>
+      <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
         <Box sx={{ position: "relative", alignSelf: "flex-start" }}>
           <Box
             onClick={() => setAvatarOpen(true)}
@@ -197,7 +479,7 @@ export default function ExternalEntityDetail({
             <ExternalEntityAvatar
               entityId={entity.id}
               entity={entity}
-              size={compact ? 88 : 120}
+              size={120}
               refresh={avatarRefresh}
             />
           </Box>
@@ -230,7 +512,7 @@ export default function ExternalEntityDetail({
             ) : (
               <PersonOutlineOutlinedIcon color="primary" />
             )}
-            <Typography variant={compact ? "h6" : "h4"} sx={{
+            <Typography variant="h4" sx={{
               fontWeight: 800
             }}>
               {entity.name}
@@ -254,14 +536,13 @@ export default function ExternalEntityDetail({
             {entity.id}
           </Typography>
 
-          {!compact && (
-            <Stack
-              direction="row"
-              spacing={1}
-              sx={{
-                mt: 1.5,
-                flexWrap: "wrap"
-              }}>
+          <Stack
+            direction="row"
+            spacing={1}
+            sx={{
+              mt: 1.5,
+              flexWrap: "wrap"
+            }}>
               <Button
                 size="small"
                 startIcon={<EditIcon />}
@@ -280,66 +561,10 @@ export default function ExternalEntityDetail({
                 В корзину
               </Button>
             </Stack>
-          )}
         </Box>
       </Stack>
 
-      {compact && (
-        <Stack direction="row" spacing={0.75} sx={{ mt: 2 }}>
-          <Tooltip title="Открыть страницу">
-            <IconButton
-              size="small"
-              onClick={() => navigate(`/external/${entity.id}`)}
-              sx={{
-                ...panelIconBtnSx,
-                "&:hover": {
-                  borderColor: "primary.main",
-                  bgcolor: alpha(theme.palette.primary.main, 0.08),
-                },
-              }}
-            >
-              <OpenInNewIcon fontSize="small" />
-            </IconButton>
-          </Tooltip>
-          <Tooltip title="Редактировать">
-            <IconButton
-              size="small"
-              color="primary"
-              onClick={() => setEditOpen(true)}
-              sx={{
-                ...panelIconBtnSx,
-                bgcolor: alpha(theme.palette.primary.main, 0.12),
-                borderColor: alpha(theme.palette.primary.main, 0.4),
-                "&:hover": {
-                  bgcolor: alpha(theme.palette.primary.main, 0.2),
-                },
-              }}
-            >
-              <EditIcon fontSize="small" />
-            </IconButton>
-          </Tooltip>
-          <Tooltip title="В корзину">
-            <IconButton
-              size="small"
-              color="warning"
-              onClick={handleArchive}
-              sx={{
-                ...panelIconBtnSx,
-                borderColor: alpha(theme.palette.error.main, 0.4),
-                "&:hover": {
-                  borderColor: "error.main",
-                  bgcolor: alpha(theme.palette.error.main, 0.08),
-                },
-              }}
-            >
-              <DeleteOutlineOutlinedIcon fontSize="small" />
-            </IconButton>
-          </Tooltip>
-        </Stack>
-      )}
-
-      {!compact &&
-        (entity.notes ||
+      {(entity.notes ||
           entity.phone ||
           entity.email ||
           entity.address ||
@@ -396,86 +621,8 @@ export default function ExternalEntityDetail({
           </>
         )}
 
-      {compact &&
-        (entity.notes ||
-          entity.phone ||
-          entity.email ||
-          entity.address ||
-          entity.birthday) && (
-          <Box sx={{ mt: 2.5 }}>
-            <Typography sx={sectionLabelSx}>
-              Контакты и информация
-            </Typography>
-            <Box sx={groupSx}>
-              <Stack divider={<RowDivider />}>
-                {!isPet && entity.phone && (
-                  <SettingsRow
-                    icon={
-                      <RowIcon bg="green">
-                        <PhoneIcon sx={{ fontSize: 18 }} />
-                      </RowIcon>
-                    }
-                    title={entity.phone}
-                    subtitle="Телефон"
-                  />
-                )}
-                {!isPet && entity.email && (
-                  <SettingsRow
-                    icon={
-                      <RowIcon bg="blue">
-                        <EmailIcon sx={{ fontSize: 18 }} />
-                      </RowIcon>
-                    }
-                    title={entity.email}
-                    subtitle="Email"
-                  />
-                )}
-                {!isPet && entity.address && (
-                  <SettingsRow
-                    icon={
-                      <RowIcon bg="orange">
-                        <HomeIcon sx={{ fontSize: 18 }} />
-                      </RowIcon>
-                    }
-                    title={entity.address}
-                    subtitle="Адрес"
-                  />
-                )}
-                {entity.birthday && (
-                  <SettingsRow
-                    icon={
-                      <RowIcon bg="pink">
-                        <CakeIcon sx={{ fontSize: 18 }} />
-                      </RowIcon>
-                    }
-                    title={entity.birthday}
-                    subtitle="День рождения"
-                  />
-                )}
-                {entity.notes && (
-                  <Box sx={{ px: 2, py: 1.25 }}>
-                    <Typography
-                      variant="caption"
-                      sx={{ color: "text.secondary" }}
-                    >
-                      Заметки
-                    </Typography>
-                    <Typography
-                      variant="body2"
-                      sx={{ whiteSpace: "pre-wrap", mt: 0.25 }}
-                    >
-                      {entity.notes}
-                    </Typography>
-                  </Box>
-                )}
-              </Stack>
-            </Box>
-          </Box>
-        )}
+      <Divider sx={{ my: 2 }} />
 
-      {!compact && <Divider sx={{ my: 2 }} />}
-
-      {!compact && (
       <>
       <Stack
         direction="row"
@@ -586,112 +733,8 @@ export default function ExternalEntityDetail({
       )}
 
       </>
-      )}
 
-      {compact && (
-        <Box sx={{ mt: 2.5 }}>
-          <Typography sx={sectionLabelSx}>
-            Связи с родственниками
-          </Typography>
-          <Box sx={groupSx}>
-            {(entity.relations || []).length === 0 ? (
-              <SettingsRow
-                icon={
-                  <RowIcon bg="gray">
-                    <LinkIcon sx={{ fontSize: 18 }} />
-                  </RowIcon>
-                }
-                title="Связи не указаны"
-              />
-            ) : (
-              <Stack divider={<RowDivider />}>
-                {entity.relations.map((rel) => {
-                  const person = findPersonById(
-                    allPeople,
-                    rel.mainPersonId,
-                  );
-                  const external = findExternalById(
-                    allExternal,
-                    rel.mainExternalEntityId,
-                  );
-                  let label;
-                  let onClick;
-                  if (rel.targetKind === "external") {
-                    label = external
-                      ? `${getExternalEntityLabel(external)} (${external.id})`
-                      : `ID ${rel.mainExternalEntityId}`;
-                    onClick = external
-                      ? () => onSelectExternal?.(external.id)
-                      : undefined;
-                  } else {
-                    label = person
-                      ? `${getPersonLabel(person)} (ID ${person.id})`
-                      : `ID ${rel.mainPersonId}`;
-                    onClick = person
-                      ? () => navigate(`/person/${person.id}`)
-                      : undefined;
-                  }
-                  return (
-                    <SettingsRow
-                      key={rel.id}
-                      icon={
-                        <RowIcon bg="indigo">
-                          <LinkIcon sx={{ fontSize: 18 }} />
-                        </RowIcon>
-                      }
-                      title={getRelationTypeLabel(rel.relationType)}
-                      subtitle={[
-                        label,
-                        rel.dates ? `Период: ${rel.dates}` : null,
-                        rel.notes,
-                      ]
-                        .filter(Boolean)
-                        .join(" · ")}
-                      onClick={onClick}
-                      trailing={
-                        onClick ? (
-                          <ChevronRightIcon
-                            sx={{ fontSize: 16, color: "text.disabled" }}
-                          />
-                        ) : undefined
-                      }
-                    />
-                  );
-                })}
-              </Stack>
-            )}
-          </Box>
-        </Box>
-      )}
-
-      <AvatarPreviewDialog
-        open={avatarOpen}
-        onClose={() => setAvatarOpen(false)}
-        imageUrl={avatarPreviewUrl}
-        alt={entity.name || "Аватар"}
-        onEdit={() => {
-          setAvatarOpen(false);
-          setAvatarEditorOpen(true);
-        }}
-      />
-
-      <AddExternalEntityDialog
-        open={editOpen}
-        onClose={() => setEditOpen(false)}
-        entity={entity}
-        onSaved={handleSaved}
-      />
-
-      <ExternalAvatarEditorDialog
-        open={avatarEditorOpen}
-        onClose={() => setAvatarEditorOpen(false)}
-        entityId={entity.id}
-        onSaved={() => {
-          setAvatarEditorOpen(false);
-          setAvatarRefresh((r) => r + 1);
-          onEntityChanged?.();
-        }}
-      />
+      {detailDialogs}
     </Box>
   );
 }

@@ -11,7 +11,7 @@ import {
 import ViewModuleIcon from "@mui/icons-material/ViewModule";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import CheckIcon from "@mui/icons-material/Check";
-import { popoverArrowSx } from "../theme/popoverArrow";
+import GlassBubbleLayers from "./GlassBubbleLayers";
 import ToolbarButtonGroup from "./ToolbarButtonGroup";
 import { useToolbarButtonGroupHitSx } from "./ToolbarCapsuleContext";
 import { TOOLBAR_HIT, TOOLBAR_MENU } from "../layout/toolbarTokens";
@@ -113,20 +113,14 @@ export default function ExpandingGroupSelect({
       slotProps={{
         paper: {
           sx: {
-            mt: 1.5,
+            mt: 2,
             minWidth: 200,
-            borderRadius: TOOLBAR_MENU.paperRadiusPx,
+            borderRadius: 0,
             overflow: "visible",
+            background: "none",
             backgroundImage: "none",
-            bgcolor: (theme) =>
-              theme.palette.mode === "dark" ? "#1E1E1E" : "#FFFFFF",
-            border: "1px solid",
-            borderColor: "divider",
-            boxShadow: (theme) =>
-              theme.palette.mode === "dark"
-                ? "0 16px 36px rgba(0, 0, 0, 0.5)"
-                : "0 16px 36px rgba(0, 0, 0, 0.16)",
-            "&::before": popoverArrowSx(),
+            boxShadow: "none",
+            border: "none",
           },
         },
         list: {
@@ -134,6 +128,7 @@ export default function ExpandingGroupSelect({
         },
       }}
     >
+      <GlassBubbleLayers />
       <Box sx={{ position: "relative", zIndex: 1 }}>
         <Typography
           variant="overline"
