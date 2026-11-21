@@ -28,6 +28,7 @@ const {
   APP_IDENTIFIER,
   PHOTO_FOLDERS,
   DB_FILES,
+  LEGACY_DB_FILES,
   normalizeZipEntryName,
   isDatabaseArtifact,
   findZipEntry,
@@ -55,6 +56,9 @@ async function importZipFromPath(zipPath, options = {}, hooks = {}) {
   const uniqueTmpDir = path.join(os.tmpdir(), `genealogy-import-${Date.now()}`);
   const report = {
     totalPersons: 0,
+    peopleInArchive: 0,
+    peopleSkippedByChoice: 0,
+    photoFilesSkipped: 0,
     success: 0,
     failed: 0,
     errors: [],
@@ -71,7 +75,7 @@ async function importZipFromPath(zipPath, options = {}, hooks = {}) {
       entries["genealogy-data.json"] || entries["manifest.json"];
     if (!dataEntry) {
       await zip.close();
-      throw new Error("Файл не распознан. Это не ZIP-бэкап Genealogy Pro.");
+      throw new Error("Файл не распознан. Это не ZIP-бэкап Kinly.");
     }
 
     const parsedData = await readZipJson(zip, dataEntry.name);
@@ -156,6 +160,11 @@ async function importZipFromPath(zipPath, options = {}, hooks = {}) {
     else if (userDecision.action === "new") finalIds = toAdd.map(String);
 
     report.totalPersons = finalIds.length;
+    report.peopleInArchive = archivePeople.length;
+    report.peopleSkippedByChoice = Math.max(
+      0,
+      archivePeople.length - finalIds.length,
+    );
 
     try {
       onProgress({
@@ -318,6 +327,7 @@ async function importZipFromPath(zipPath, options = {}, hooks = {}) {
           if (photosIndex >= 0) {
             const folder = relParts[photosIndex + 1];
             if (folder && PHOTO_FOLDERS.has(folder) && !restorePhotoFolderSet.has(folder)) {
+              report.photoFilesSkipped += 1;
               continue;
             }
           }
@@ -420,9 +430,9 @@ async function copyDir(src, dest) {
 }
 
 async function restoreFaceDatabaseFromTemp(tmpDir) {
-  const sourceFiles = DB_FILES.map((fileName) => path.join(tmpDir, fileName)).filter(
-    (filePath) => fs.existsSync(filePath),
-  );
+  const sourceFiles = [...DB_FILES, ...LEGACY_DB_FILES]
+    .map((fileName) => path.join(tmpDir, fileName))
+    .filter((filePath) => fs.existsSync(filePath));
 
   if (sourceFiles.length === 0) {
     return { restored: false, files: [] };
@@ -433,7 +443,10 @@ async function restoreFaceDatabaseFromTemp(tmpDir) {
   const restoredFiles = [];
   try {
     for (const sourcePath of sourceFiles) {
-      const fileName = path.basename(sourcePath);
+      // Старые архивы содержат genealogy.sqlite — восстанавливаем под новым именем.
+      const fileName = path
+        .basename(sourcePath)
+        .replace(/^genealogy\.sqlite/, "kinly.sqlite");
       const targetPath = path.join(getBaseDir(), fileName);
 
       if (fs.existsSync(targetPath)) {

@@ -10,13 +10,37 @@ Copy structure and spacing from these files; do not invent a new layout for the 
 
 ## Draggable modal dialog
 
-- **Reference**: `PhotoMetaUpdateDialog.jsx` + `DraggableDialog.jsx`
+- **Reference**: `PhotoMetaDialog.jsx` + `Dialog/DraggableDialog.jsx`
 - Photo preview left, form right; overlay tools top-left on preview.
 
 ## Fullscreen photo
 
 - **Reference**: `PhotoFullscreenViewer.jsx`
 - Face toggle; horizontal drag navigation.
+
+## Modal dialog — стеклянный материал (обязательно)
+
+**Все** модальные окна используют общий материал из `src/components/Dialog/glassDialog.js`:
+
+- `glassPaperSx(t)` — фон `rgba(51,51,51,0.37)` (dark) / `rgba(255,255,255,0.65)` (light), `backdrop-filter: blur(25px)`, radius `RADIUS.dialog` (24px), hairline border (`rgba(166,166,166,0.17)` dark / `rgba(0,0,0,0.08)` light), тень `0 18px 48px`. Значения — как у карточек уведомлений.
+- `glassBackdropSx` — затемнение под модалкой `rgba(0,0,0,0.28)`.
+- Подключение: `slotProps={{ backdrop: { sx: glassBackdropSx }, paper: { sx: (t) => ({ ...glassPaperSx(t), /* размеры диалога */ }) } }}`. Ширину/высоту/раскладку каждый диалог задаёт сам.
+- Не дублировать `borderRadius`/`backgroundImage`/`bgcolor`/`backdropFilter`/`border`/`boxShadow` локально — только размеры и layout.
+- **Исключения**: медиа-вьюверы на чёрном фоне (`PhotoFullscreenViewer`, `AvatarPreviewDialog`, превью файла/картинки) — стекло не применяется.
+
+## Form dialog — поля и секции
+
+Стиль диалогов «добавить/редактировать» (фото, событие, запись справочника). Эталоны: `PhotoUploadDialog.jsx`, `EventEditorDialog.jsx`, `AddExternalEntityDialog.jsx`.
+
+- **Styles module**: `src/components/dialogFieldStyles.js` — `sectionLabelSx`, `fieldBlockSx`, `fieldRowSx`, `fieldTitleSx`, `fieldValueSx`, `inputSx`. Не копировать локально.
+- **Каркас**: центрированный `h6` в шапке, секции с `sectionLabelSx`, футер `DialogActionsBar` + `DialogActionButton`.
+- **Field block**: `fieldBlockSx` — radius 12px, тинтованный фон (`rgba(255,255,255,0.06)` dark / `rgba(0,0,0,0.04)` light), `overflow: hidden`.
+- **Строка поля**: `fieldRowSx` — `px:12 py:9` = **36px**, иконка **18px**, зазор иконка→текст **12px**, `Divider` между строками.
+- **Инпут без рамок**: `inputSx` на `InputBase`; у внутреннего `input/textarea` обязателен `lineHeight: "inherit"` — у MUI свой 1.4375, иначе строка ~36.7px.
+- **Пикер-поле** (тип, тип связи): подпись слева + выбранное значение + круглая кнопка-шеврон **18px** (иконка 12px); меню стеклянное, открывается `bottom-end`; поиск — первый элемент меню, если нужен.
+- **Пикеры людей**: `PhotoOwnerField`, `PhotoAttendeesList`, `FaceTagPicker`/`PhotoFaceFormSection` — аватар **18px**, gap **12px**; пилюля выбранного — `display:flex` + `lineHeight:1.35`, иначе строка выше 36px.
+- **Переключатели-поля** (место, геопозиция): строка «Название» + `CustomSwitch`; включение открывает поле-строку, выключение очищает значение.
+- **Инспектор в стиле PersonSummary**: аватар 52 + имя/подписи + ряд `DialogActionButton` + секции `sectionLabelSx` + `groupSx` + `SettingsRow`/`RowDivider` (см. `Page_Families/panel/PersonSummary.jsx`, `ExternalEntityDetail` compact).
 
 ## Notifications
 
@@ -35,7 +59,7 @@ Copy structure and spacing from these files; do not invent a new layout for the 
 ## Modal dialog actions (footer)
 
 - **Reference**: `src/components/Dialog/DialogActionButton.jsx` + `DialogActionsBar`
-- Used in `PhotoMetaUpdateDialog`, `ConfirmDialog`, most editors — **pill** buttons (see `tokens.md`).
+- Used in `PhotoMetaDialog`, `ConfirmDialog`, most editors — **pill** buttons (see `tokens.md`).
 
 ## App bar — glass toolbar capsule
 

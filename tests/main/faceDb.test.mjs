@@ -9,6 +9,7 @@ const {
   loadFaceIndex,
   saveFaceIndex,
   getFaceDbStats,
+  deleteReferencesForPhoto,
 } = require("../../src/main/db/faceDb.cjs");
 
 const SAMPLE_DESCRIPTOR = Array.from({ length: 8 }, (_, i) => 0.1 * (i + 1));
@@ -48,6 +49,60 @@ describe("faceDb (temp GENEALOGY_TEST_ROOT)", () => {
       expect(index.references[0].personId).toBe(4242);
       expect(index.references[0].descriptor).toHaveLength(8);
       expect(index.scanState).toEqual({ pass: "test" });
+
+      closeFaceDb();
+    });
+  });
+
+  it("deleteReferencesForPhoto removes only tagged refs for owner+photoId", async () => {
+    await withTestLibrary(async () => {
+      closeFaceDb();
+      initializeFaceDb();
+
+      saveFaceIndex({
+        version: 1,
+        references: [
+          {
+            personId: 1,
+            source: "tagged",
+            owner: "10",
+            photoId: "ph-a",
+            faceId: "f1",
+            descriptor: SAMPLE_DESCRIPTOR,
+          },
+          {
+            personId: 1,
+            source: "tagged",
+            owner: "10",
+            photoId: "ph-b",
+            faceId: "f2",
+            descriptor: SAMPLE_DESCRIPTOR,
+          },
+          {
+            personId: 1,
+            source: "avatar",
+            descriptor: SAMPLE_DESCRIPTOR,
+          },
+        ],
+        scanState: null,
+      });
+
+      const removed = deleteReferencesForPhoto(10, "ph-a");
+      expect(removed.deleted).toBe(1);
+
+      const index = loadFaceIndex();
+      expect(index.references).toHaveLength(2);
+      expect(
+        index.references.some(
+          (r) => r.source === "tagged" && r.photoId === "ph-a",
+        ),
+      ).toBe(false);
+      expect(
+        index.references.some(
+          (r) => r.source === "tagged" && r.photoId === "ph-b",
+        ),
+      ).toBe(true);
+      expect(index.references.some((r) => r.source === "avatar")).toBe(true);
 
       closeFaceDb();
     });

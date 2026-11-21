@@ -41,6 +41,6 @@ describe("inspectArchive (mock zip in tmpdir only)", () => {
     await buildMinimalImportZip(dbZip, { withDbArtifact: true });
     const info = await inspectArchive(dbZip);
     expect(info.hasDatabaseFiles).toBe(true);
-    expect(info.availableDatabaseFiles).toContain("genealogy.sqlite");
+    expect(info.availableDatabaseFiles).toContain("kinly.sqlite");
   });
 });

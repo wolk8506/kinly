@@ -5,18 +5,20 @@ import {
   TextField,
   IconButton,
   Chip,
+  alpha,
 } from "@mui/material";
-import { indigo } from "@mui/material/colors";
 import GroupIcon from "@mui/icons-material/Group";
 import CloseIcon from "@mui/icons-material/Close";
 import ToolbarButtonGroup from "../../components/ToolbarButtonGroup";
 import {
   useToolbarButtonGroupHitSx,
 } from "../../components/ToolbarCapsuleContext";
-import { toolbarButtonGroupHitSx } from "../toolbarStyles";
-import { TOOLBAR_HIT, TOOLBAR_MENU } from "../toolbarTokens";
+import { TOOLBAR_CAPSULE, TOOLBAR_HIT, TOOLBAR_MENU } from "../toolbarTokens";
 
 const EXPANDED_WIDTH = 320;
+/** Как в ExpandingSearch — белый кружок с крестиком. */
+const SEARCH_CLEAR_SIZE = 12;
+const SEARCH_CLEAR_ICON_SIZE = 8;
 
 function PeopleSelectSurface({ hasSelection, onClick, children }) {
   const hitSx = useToolbarButtonGroupHitSx(hasSelection);
@@ -159,9 +161,18 @@ export default function ExpandingPeopleSelect({
               if (value.length === 0) return null;
 
               const { key, ...tagProps } = getItemProps({ index: 0 });
+              const extraCount = value.length - 1;
               return (
                 <Box
-                  sx={{ display: "flex", gap: 0.5, ml: 0.5, alignItems: "center" }}
+                  sx={{
+                    display: "flex",
+                    gap: 0.5,
+                    ml: 0.5,
+                    alignItems: "center",
+                    flex: "1 1 auto",
+                    minWidth: 0,
+                    maxWidth: "100%",
+                  }}
                 >
                   <Chip
                     key={key}
@@ -172,19 +183,27 @@ export default function ExpandingPeopleSelect({
                       color: "inherit",
                       height: 24,
                       fontSize: "0.75rem",
-                      maxWidth: 150,
+                      flexShrink: 1,
+                      minWidth: 0,
+                      maxWidth: extraCount > 0 ? 118 : 150,
+                      "& .MuiChip-label": {
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                        display: "block",
+                      },
                     }}
                     {...tagProps}
                   />
-                  {value.length > 1 && (
+                  {extraCount > 0 && (
                     <Chip
-                      label={`+${value.length - 1}`}
+                      label={`+${extraCount}`}
                       size="small"
                       sx={{
-                        bgcolor: indigo[300],
-                        color: "white",
+                        bgcolor: "primary.main",
+                        color: "primary.contrastText",
                         height: 24,
                         fontSize: "0.75rem",
+                        flexShrink: 0,
                       }}
                     />
                   )}
@@ -203,6 +222,9 @@ export default function ExpandingPeopleSelect({
                   ml: 0.5,
                   flex: 1,
                   minWidth: 0,
+                  "& .MuiInputBase-root": {
+                    py: 0,
+                  },
                   "& .MuiInputBase-input": {
                     color: "inherit",
                     fontSize: "0.875rem",
@@ -235,14 +257,40 @@ export default function ExpandingPeopleSelect({
               flex: 1,
               minWidth: 0,
               "& .MuiAutocomplete-endAdornment": { display: "none" },
+              "& .MuiAutocomplete-inputRoot": {
+                flexWrap: "nowrap",
+                alignItems: "center",
+                gap: 0,
+                py: 0,
+                pl: 0,
+                pr: 0.25,
+                minHeight: TOOLBAR_HIT.height,
+                height: TOOLBAR_HIT.height,
+                maxHeight: TOOLBAR_CAPSULE.height - TOOLBAR_CAPSULE.padding * 2,
+              },
+              "& .MuiAutocomplete-input": {
+                py: 0,
+                minWidth: isMenuOpen ? 48 : selectedPeople.length > 0 ? 0 : 24,
+                width: isMenuOpen
+                  ? undefined
+                  : selectedPeople.length > 0
+                    ? 0
+                    : undefined,
+                flex: isMenuOpen
+                  ? "1 1 auto"
+                  : selectedPeople.length > 0
+                    ? "0 0 0"
+                    : "1 1 auto",
+              },
             }}
           />
         )}
 
-        {isExpanded && (
+        {hasSelection && (
           <IconButton
             className="clear-button"
             size="small"
+            aria-label="Сбросить фильтр по людям"
             onClick={(e) => {
               e.stopPropagation();
               onChange(null, []);
@@ -250,15 +298,26 @@ export default function ExpandingPeopleSelect({
               setIsMenuOpen(false);
             }}
             sx={{
-              ...toolbarButtonGroupHitSx(false),
-              width: TOOLBAR_HIT.minWidth,
-              height: TOOLBAR_HIT.minWidth,
-              p: 0,
               flexShrink: 0,
-              color: "inherit",
+              p: 0,
+              width: SEARCH_CLEAR_SIZE,
+              height: SEARCH_CLEAR_SIZE,
+              borderRadius: "50%",
+              bgcolor: "#fff",
+              color: (theme) =>
+                theme.palette.mode === "dark" ? "#3a3a3a" : "#6e6e6e",
+              "&:hover": {
+                bgcolor: alpha("#fff", 0.92),
+              },
             }}
           >
-            <CloseIcon sx={{ fontSize: TOOLBAR_HIT.chevronSize }} />
+            <CloseIcon
+              sx={{
+                fontSize: SEARCH_CLEAR_ICON_SIZE,
+                width: SEARCH_CLEAR_ICON_SIZE,
+                height: SEARCH_CLEAR_ICON_SIZE,
+              }}
+            />
           </IconButton>
         )}
       </PeopleSelectSurface>

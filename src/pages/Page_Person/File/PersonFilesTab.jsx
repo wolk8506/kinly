@@ -25,6 +25,10 @@ import DialogActionButton, {
   DialogActionsBar,
 } from "../../../components/Dialog/DialogActionButton";
 import {
+  glassPaperSx,
+  glassBackdropSx,
+} from "../../../components/Dialog/glassDialog";
+import {
   AudioFile as AudioIcon,
   Description as DocIcon,
   Visibility as ViewIcon,
@@ -1115,6 +1119,16 @@ export default function PersonFilesTab({ personId, personName }) {
         onClose={() => setRenameDialog(null)}
         maxWidth="xs"
         fullWidth
+        slotProps={{
+          backdrop: { sx: glassBackdropSx },
+          paper: {
+            sx: (t) => ({
+              ...glassPaperSx(t),
+              width: "100%",
+              maxWidth: 600,
+            }),
+          }
+        }}
       >
         <DialogTitle>Переименовать файл</DialogTitle>
         <DialogContent>

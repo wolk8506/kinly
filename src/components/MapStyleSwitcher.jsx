@@ -8,7 +8,7 @@ import {
   useTheme,
 } from "@mui/material";
 import { TileLayer } from "react-leaflet";
-import { MAP_BASE_LAYERS, getThumbTiles } from "../utils/mapLayers";
+import { MAP_BASE_LAYERS, getBaseLayer, getThumbTiles } from "../utils/mapLayers";
 import MapFillIcon from "./svg/MapFillIcon";
 import GlobeEuropeAfricaIcon from "./svg/GlobeEuropeAfricaIcon";
 import GlobeAmericasFillIcon from "./svg/GlobeAmericasFillIcon";
@@ -21,13 +21,17 @@ const LAYER_ICONS = {
 };
 
 export function MapBaseTileLayer({ layer }) {
-  const props = { url: layer.url, maxZoom: layer.maxZoom };
+  const props = {
+    url: layer.url,
+    maxZoom: layer.maxZoom,
+    className: layer.filtered ? "map-tiles-darkfilter" : undefined,
+  };
   if (layer.subdomains?.length) props.subdomains = layer.subdomains;
-  return <TileLayer key={layer.id} {...props} />;
+  return <TileLayer key={layer.url} {...props} />;
 }
 
-function LayerThumb({ layer, selected, onSelect, isDark }) {
-  const tiles = getThumbTiles(layer);
+function LayerThumb({ layer, selected, onSelect, dark }) {
+  const tiles = getThumbTiles(getBaseLayer(layer.id, { dark }));
   return (
     <Box
       onClick={() => onSelect(layer.id)}
@@ -42,7 +46,7 @@ function LayerThumb({ layer, selected, onSelect, isDark }) {
           display: "grid",
           gridTemplateColumns: "1fr 1fr",
           gridTemplateRows: "1fr 1fr",
-          bgcolor: isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.06)",
+          bgcolor: dark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.06)",
           outline: selected ? "3px solid" : "3px solid transparent",
           outlineColor: selected ? "primary.main" : "transparent",
           "& img": {
@@ -86,12 +90,12 @@ export default function MapStyleSwitcher({
   baseLayer,
   onChange,
   sx,
+  dark = false,
   onLocate,
   locating = false,
   showLocate = false,
 }) {
   const theme = useTheme();
-  const isDark = theme.palette.mode === "dark";
   const [open, setOpen] = useState(false);
   const anchorRef = useRef(null);
   const CurrentLayerIcon = LAYER_ICONS[baseLayer] || LAYER_ICONS.osm;
@@ -199,7 +203,7 @@ export default function MapStyleSwitcher({
             <LayerThumb
               key={layer.id}
               layer={layer}
-              isDark={isDark}
+              dark={dark}
               selected={layer.id === baseLayer}
               onSelect={(id) => onChange(id)}
             />

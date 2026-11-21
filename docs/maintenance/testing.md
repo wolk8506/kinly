@@ -27,20 +27,21 @@ npm run test:coverage   # пороги v8 по import/dataStore/jsonStore (см.
 | `tests/main/faceDb.test.mjs` | save/load reference, `getFaceDbStats` |
 | `tests/main/archiveUtils.test.mjs` | пути и обход файлов для `archive:create` |
 | `tests/main/exportArchiveManifest.test.mjs` | manifest + genealogy-data для экспорта |
+| `tests/main/exportArchiveCreate.test.mjs` | staging как exportToZip → `createArchiveFromPaths` → `inspectArchive` |
 | `tests/renderer/buildFamilyViews.test.mjs` | семьи из spouses + father/mother (чистый JS) |
 | `tests/renderer/formatDate.test.mjs` | `formatNotificationDate` (fake timers) |
 
 ## Импорт и библиотека данных
 
-**Нельзя** в автотестах трогать рабочую папку `~/Documents/Genealogy` (или активный корень из `storage.json`).
+**Нельзя** в автотестах трогать рабочую папку `~/Documents/Kinly` (или активный корень из `storage.json`).
 
 - **Предпросмотр ZIP** (`importArchiveInspect`) — только чтение переданного файла; тесты собирают архив в `tmpdir` через `tests/helpers/buildMinimalImportZip.mjs`.
 - **Полный импорт без IPC** — `importZipFromPath` в `importZipApply.cjs`; в тестах корень задаётся **`GENEALOGY_TEST_ROOT`** (см. `config.cjs` → `getBaseDir`) и обёртка `tests/helpers/testLibraryRoot.mjs` (`withTestLibrary`).
-- **Большая моковая библиотека** (ручные сценарии): `npm run mock:library -- --out <tmpdir>/genealogy-mock --fresh --seed 1`.
+- **Большая моковая библиотека** (ручные сценарии): `npm run mock:library -- --out <tmpdir>/kinly-mock --fresh --seed 1`.
 
 Реальные пользовательские архивы в CI не кладём.
 
-**Not covered yet:** IPC-обёртка `import:zip` (тонкая), экспорт архива.
+**Not covered yet:** IPC-обёртка `import:zip` (тонкая), IPC `archive:create` (логика — `archiveCreateFromPaths.cjs`).
 
 **CI:**
 - `test.yml` — `npm test` (unit) на Ubuntu и **Windows** (`push` / `pull_request`)

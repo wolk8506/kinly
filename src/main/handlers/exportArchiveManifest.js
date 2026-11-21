@@ -1,12 +1,12 @@
 // Паспорт ZIP-бэкапа (общий для exportToZip и импорта).
-// Не require dataStore/config — иначе Vite стянет Electron в рендерер.
-const GENEALOGY_DATA_SCHEMA_VERSION = 1;
+// Без dataStore/config/Electron — безопасно для рендерера (Vite ESM).
+export const GENEALOGY_DATA_SCHEMA_VERSION = 1;
 
-const APP_IDENTIFIER = "MY_GENEALOGY_APP";
-const ARCHIVE_KIND = "genealogy-archive";
-const ARCHIVE_MANIFEST_VERSION = 2;
+export const APP_IDENTIFIER = "MY_GENEALOGY_APP";
+export const ARCHIVE_KIND = "genealogy-archive";
+export const ARCHIVE_MANIFEST_VERSION = 2;
 
-function buildExportManifest({
+export function buildExportManifest({
   archiveName,
   createdAt,
   photoFolders,
@@ -27,7 +27,7 @@ function buildExportManifest({
   };
 }
 
-function buildGenealogyDataExportPayload({
+export function buildGenealogyDataExportPayload({
   people,
   archiveName,
   createdAt,
@@ -48,11 +48,3 @@ function buildGenealogyDataExportPayload({
     people: Array.isArray(people) ? people : [],
   };
 }
-
-module.exports = {
-  APP_IDENTIFIER,
-  ARCHIVE_KIND,
-  ARCHIVE_MANIFEST_VERSION,
-  buildExportManifest,
-  buildGenealogyDataExportPayload,
-};

@@ -151,6 +151,8 @@ contextBridge.exposeInMainWorld("faceAPI", {
   saveScanState: (scanState) =>
     ipcRenderer.invoke("face:saveScanState", scanState),
   getScanState: () => ipcRenderer.invoke("face:getScanState"),
+  deleteReferencesForPhoto: (owner, photoId) =>
+    ipcRenderer.invoke("face:deleteReferencesForPhoto", { owner, photoId }),
   mergePersonIds: (keepPersonId, removePersonIds) =>
     ipcRenderer.invoke("face:mergePersonIds", {
       keepPersonId,
@@ -215,7 +217,7 @@ contextBridge.exposeInMainWorld("photoExport", {
   exportPDF: (photos) => ipcRenderer.invoke("photo:exportPDF", photos),
 });
 
-// 📂 Место хранения данных (корень Genealogy)
+// 📂 Место хранения данных (корень Kinly)
 contextBridge.exposeInMainWorld("storageAPI", {
   get: () => ipcRenderer.invoke("storage:get"),
   choose: () => ipcRenderer.invoke("storage:choose"),
@@ -255,7 +257,7 @@ contextBridge.exposeInMainWorld("appAPI", {
     ipcRenderer.invoke("app:getPersonFolderSize", personId), //Для страницы архив
   onFolderSizeUpdated: (callback) =>
     ipcRenderer.on("app:folder-size-updated", callback),
-  fullReset: () => ipcRenderer.invoke("app:full-reset"), // Удаление всех данных в папке 'Genealogy'
+  fullReset: () => ipcRenderer.invoke("app:full-reset"), // Удаление всех данных в папке 'Kinly'
 
   // ~   Методы для конвертера фото в Архиве
   openFolder: (path) => ipcRenderer.send("open-folder", path),

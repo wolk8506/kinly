@@ -279,7 +279,10 @@ export default function PhotoGallery({
           ref={galleryRef}
           onClick={(event) => {
             // Клик по пустому месту галереи снимает выделение,
-            // клики по самим фото и их кнопкам — нет.
+            // клики по самим фото и их кнопкам — нет. События из порталов
+            // (модалки) сюда тоже доходят по дереву компонентов — такие
+            // клики выделение не снимают.
+            if (!event.currentTarget.contains(event.target)) return;
             if (event.target.closest("[data-photo-cell]")) return;
             clearSelection();
           }}

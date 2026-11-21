@@ -60,6 +60,8 @@ export default function PersonEvents({
       return da - db;
     });
 
+  const visibleEvents = sortedEvents;
+
   return (
     <Box
       sx={{
@@ -124,17 +126,17 @@ export default function PersonEvents({
 
       {/* СПИСОК */}
       <Box sx={{ flex: 1, overflowY: "auto", position: "relative" }}>
-        {sortedEvents.length === 0 ? (
+        {visibleEvents.length === 0 ? (
           <Box sx={{ p: 4, textAlign: "center", opacity: 0.5 }}>
             <Typography variant="body2">Событий пока нет</Typography>
           </Box>
         ) : (
           <List sx={{ p: 0 }}>
-            {sortedEvents.map((ev, index) => (
+            {visibleEvents.map((ev, index) => (
               <ListItem
                 key={index}
                 disablePadding
-                divider={index !== sortedEvents.length - 1} // Разделитель между всеми, кроме последнего
+                divider={index !== visibleEvents.length - 1} // Разделитель между всеми, кроме последнего
                 sx={{
                   // Стили для появления кнопки карандаша
                   "&:hover .edit-button": {
@@ -169,6 +171,7 @@ export default function PersonEvents({
                       bgcolor: (theme) =>
                         alpha(theme.palette.primary.main, 0.05),
                       color: "primary.main",
+                      "& svg": { fontSize: 20 },
                     }}
                   >
                     {EVENT_TYPES.find((i) => i.name === ev.type)?.icon}
@@ -331,7 +334,7 @@ export default function PersonEvents({
                                   component="span"
                                   variant="body2"
                                   sx={{
-                                    ml: 1,
+                                    ml: "12px",
                                     color: "text.secondary"
                                   }}>
                                   {labelOf(p)}
@@ -373,7 +376,7 @@ export default function PersonEvents({
                                   component="span"
                                   variant="body2"
                                   sx={{
-                                    ml: 1,
+                                    ml: "12px",
                                     color: "text.secondary"
                                   }}>
                                   {getExternalEntityLabel(entity)}

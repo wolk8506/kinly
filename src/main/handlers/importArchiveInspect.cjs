@@ -1,11 +1,10 @@
 // Предпросмотр ZIP-бэкапа (import:inspect) — без записи в библиотеку.
-const path = require("path");
 const StreamZip = require("node-stream-zip");
 const {
   APP_IDENTIFIER,
   PHOTO_FOLDERS,
-  DB_FILES,
   normalizeZipEntryName,
+  isDatabaseArtifact,
   findZipEntry,
   parseArchiveMeta,
 } = require("./importArchiveUtils.cjs");
@@ -39,7 +38,7 @@ async function inspectArchive(zipPath) {
     const hasExternalRoot = names.some((name) => name.startsWith("external/"));
     const availableDatabaseFiles = names
       .map(normalizeZipEntryName)
-      .filter((name) => DB_FILES.includes(path.basename(name)));
+      .filter(isDatabaseArtifact);
 
     const availablePhotoFolders = Array.from(
       new Set(

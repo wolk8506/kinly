@@ -1,5 +1,5 @@
 import React, { useMemo } from "react";
-import { Box, Stack, IconButton } from "@mui/material";
+import { Box, Stack, IconButton, Tooltip } from "@mui/material";
 import RefreshIcon from "@mui/icons-material/Refresh";
 import ButtonConteiner from "../../components/ButtonConteiner";
 import ExpandingPeopleSelect from "../bar_GlobalPhotoGallery/ExpandingPeopleSelect";
@@ -53,15 +53,19 @@ export default function MapToolbar({
         />
 
         <ButtonConteiner>
-          <IconButton
-            size="small"
-            title="Обновить (Shift — перегеокодировать)"
-            onClick={(e) => onRefresh?.(e)}
-            disabled={loading}
-            sx={{ color: "inherit", p: 0 }}
-          >
-            <RefreshIcon sx={{ fontSize: TOOLBAR_HIT.iconSize }} />
-          </IconButton>
+          <Tooltip title="Обновить (Shift — перегеокодировать)">
+            <span>
+              <IconButton
+                size="small"
+                aria-label="Обновить"
+                onClick={(e) => onRefresh?.(e)}
+                disabled={loading}
+                sx={{ color: "inherit", p: 0 }}
+              >
+                <RefreshIcon sx={{ fontSize: TOOLBAR_HIT.iconSize }} />
+              </IconButton>
+            </span>
+          </Tooltip>
         </ButtonConteiner>
       </Box>
     </Stack>

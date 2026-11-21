@@ -20,6 +20,7 @@ import DialogActionButton, {
 } from "./DialogActionButton";
 import { useNotificationStore } from "../../store/useNotificationStore";
 import useDialogSaveHotkey from "../../hooks/useDialogSaveHotkey";
+import { glassPaperSx, glassBackdropSx } from "./glassDialog";
 
 const fieldSx = {
   "& .MuiOutlinedInput-root": { borderRadius: "12px" },
@@ -266,14 +267,14 @@ export default function AddPersonModal({ open, onClose }) {
         maxWidth="sm"
         transitionDuration={{ enter: 180, exit: 140 }}
         slotProps={{
+          backdrop: { sx: glassBackdropSx },
           paper: {
-            sx: {
-              borderRadius: "24px",
-              backgroundImage: "none",
+            sx: (t) => ({
+              ...glassPaperSx(t),
               width: 600,
               maxWidth: "94vw",
               overflow: "hidden",
-            },
+            }),
           }
         }}
       >

@@ -2,28 +2,21 @@ import React, { useEffect, useRef, useState } from "react";
 import {
   Dialog,
   Button,
-  TextField,
   Stack,
-  Autocomplete,
   Box,
   CircularProgress,
   Typography,
   IconButton,
-  Tooltip,
-  Popover,
 } from "@mui/material";
-import { alpha, useTheme } from "@mui/material/styles";
+import { useTheme } from "@mui/material/styles";
 import FaceRetouchingNaturalIcon from "@mui/icons-material/FaceRetouchingNatural";
-import AddIcon from "@mui/icons-material/Add";
-import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
 import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
-import CheckIcon from "@mui/icons-material/Check";
 import PhotoFaceOverlay from "../PhotoFaceOverlay";
+import { PhotoFaceFormSection } from "../PhotoFaceMarkupBlocks";
 import DialogActionButton, {
   DialogActionsBar,
 } from "./DialogActionButton";
 import { useNotificationStore } from "../../store/useNotificationStore";
-import { distanceToConfidence } from "../../services/faceRecognition";
 import { detectFacesFromImageUrl } from "../../services/faceDetection";
 import {
   enrichFacesWithDescriptors,
@@ -35,17 +28,10 @@ import {
   createDefaultFace,
   syncPeopleFromFaces,
   syncExternalPeopleFromFaces,
-  getPersonLabel,
-  confirmFaceAssignment,
-  confirmExternalFaceAssignment,
 } from "../../utils/photoFaces";
-import {
-  buildFaceTagOptions,
-  faceTagOptionFromFace,
-  applyFaceTagOption,
-  getExternalEntityLabel,
-} from "../../utils/externalEntities";
 import useDialogSaveHotkey from "../../hooks/useDialogSaveHotkey";
+import { glassPaperSx, glassBackdropSx } from "./glassDialog";
+import FaceFramesHelpPopover from "../FaceFramesHelpPopover";
 
 // Редактор разметки лиц фото в стиле iOS (как PhotoPreviewDialog).
 export default function PhotoFacesDialog({
@@ -118,11 +104,15 @@ export default function PhotoFacesDialog({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [meta, photoPaths, open]);
 
-  const faceTagOptions = buildFaceTagOptions(allPeople, allExternal);
-  const selectedFace = faces.find((f) => f.id === selectedFaceId);
-
   const handleFacesChange = (nextFaces) => {
-    setFaces(normalizeFaces(nextFaces));
+    const normalized = normalizeFaces(nextFaces);
+    setFaces(normalized);
+    if (
+      selectedFaceId &&
+      !normalized.some((f) => f.id === selectedFaceId)
+    ) {
+      setSelectedFaceId(null);
+    }
   };
 
   const handleAddFace = () => {
@@ -130,19 +120,6 @@ export default function PhotoFacesDialog({
     handleFacesChange(next);
     setSelectedFaceId(next[next.length - 1].id);
     setDrawMode(false);
-  };
-
-  const handleAcceptSuggestion = (face) => {
-    if (!face?.suggestedPersonId && !face?.suggestedExternalEntityId) return;
-    const next = faces.map((f) =>
-      f.id !== face.id
-        ? f
-        : face.suggestedExternalEntityId
-          ? confirmExternalFaceAssignment(f, face.suggestedExternalEntityId)
-          : confirmFaceAssignment(f, face.suggestedPersonId),
-    );
-    handleFacesChange(next);
-    setSelectedFaceId(face.id);
   };
 
   const handleDetectFaces = async () => {
@@ -298,17 +275,16 @@ export default function PhotoFacesDialog({
       onClose={onClose}
       maxWidth={false}
       slotProps={{
+        backdrop: { sx: glassBackdropSx },
         paper: {
-          sx: {
-            borderRadius: "24px",
-            backgroundImage: "none",
+          sx: (t) => ({
+            ...glassPaperSx(t),
             width: 920,
             maxWidth: "94vw",
             maxHeight: "94vh",
-            overflow: "hidden",
             display: "flex",
             flexDirection: "column",
-          },
+          }),
         }
       }}
     >
@@ -438,40 +414,12 @@ export default function PhotoFacesDialog({
               </IconButton>
             </Stack>
 
-            <Popover
-              open={Boolean(faceHelpAnchor)}
+            <FaceFramesHelpPopover
               anchorEl={faceHelpAnchor}
               onClose={() => setFaceHelpAnchor(null)}
-              anchorOrigin={{ vertical: "bottom", horizontal: "left" }}
-              transformOrigin={{ vertical: "top", horizontal: "left" }}
-              slotProps={{ paper: { sx: { p: 2, maxWidth: 320 } } }}
-            >
-              <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 700 }}>
-                Управление рамками
-              </Typography>
-              <Stack spacing={0.75} component="ul" sx={{ m: 0, pl: 2.2 }}>
-                <Typography component="li" variant="body2">
-                  <strong>Найти</strong> — авто-поиск всех лиц на фото
-                </Typography>
-                <Typography component="li" variant="body2">
-                  <strong>ЛКМ</strong> по рамке — выбор лица
-                </Typography>
-                <Typography component="li" variant="body2">
-                  <strong>Точка справа внизу</strong> (ЛКМ) — изменение размера
-                  рамки
-                </Typography>
-                <Typography component="li" variant="body2">
-                  <strong>ПКМ + перетаскивание</strong> — рисование новой рамки
-                </Typography>
-                <Typography component="li" variant="body2">
-                  <strong>ЛКМ + перетаскивание</strong> — перемещение выбранной
-                  рамки
-                </Typography>
-                <Typography component="li" variant="body2">
-                  <strong>Backspace</strong> — удалить выделенную рамку
-                </Typography>
-              </Stack>
-            </Popover>
+              anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+              transformOrigin={{ vertical: "top", horizontal: "center" }}
+            />
           </Box>
 
           {/* СПИСОК ЛИЦ */}
@@ -484,234 +432,29 @@ export default function PhotoFacesDialog({
               flexDirection: "column",
             }}
           >
-            <Stack
-              direction="row"
-              sx={{
-                alignItems: "center",
-                justifyContent: "space-between",
-                mb: 1.5
-              }}>
-              <Typography
-                variant="overline"
-                sx={{ fontWeight: 700, color: "text.secondary" }}
-              >
-                Лица на фото {faces.length > 0 ? `· ${faces.length}` : ""}
-              </Typography>
-              <Button
-                size="small"
-                startIcon={<AddIcon />}
-                onClick={handleAddFace}
-                sx={{ textTransform: "none" }}
-              >
-                Лицо
-              </Button>
-            </Stack>
-
-            <Box sx={{ flexGrow: 1, overflowY: "auto", pr: 0.5 }}>
-              {faces.length === 0 ? (
-                <Typography variant="body2" sx={{
-                  color: "text.secondary"
-                }}>
+            <Box sx={{ flexGrow: 1, overflowY: "auto", minHeight: 0 }}>
+              <PhotoFaceFormSection
+                theme={theme}
+                faces={faces}
+                allPeople={allPeople}
+                allExternal={allExternal}
+                onSelectFace={setSelectedFaceId}
+                onFacesChange={handleFacesChange}
+                onAddFace={handleAddFace}
+              />
+              {faces.length === 0 && (
+                <Typography
+                  sx={{
+                    mt: "6px",
+                    pl: "12px",
+                    fontSize: "0.75rem",
+                    fontWeight: 400,
+                    lineHeight: 1.35,
+                    color: "text.secondary",
+                  }}
+                >
                   Нет размеченных лиц. Нажмите «Найти» или нарисуйте рамку.
                 </Typography>
-              ) : (
-                <Stack spacing={1.5}>
-                  {faces.map((face, index) => {
-                    const isSelected = selectedFaceId === face.id;
-                    const suggestedPerson =
-                      face.suggestedPersonId != null
-                        ? allPeople.find(
-                            (p) => p.id === face.suggestedPersonId,
-                          )
-                        : null;
-                    const suggestedExternal =
-                      face.suggestedExternalEntityId != null
-                        ? allExternal.find(
-                            (e) => e.id === face.suggestedExternalEntityId,
-                          )
-                        : null;
-                    const hasSuggestion = Boolean(
-                      suggestedPerson || suggestedExternal,
-                    );
-
-                    return (
-                      <Box
-                        key={face.id}
-                        onClick={() => setSelectedFaceId(face.id)}
-                        sx={{
-                          p: 1.5,
-                          borderRadius: "16px",
-                          bgcolor: isSelected
-                            ? alpha(theme.palette.primary.main, 0.1)
-                            : "action.hover",
-                          border: `1px solid ${
-                            isSelected
-                              ? theme.palette.primary.main
-                              : alpha(theme.palette.divider, 0.4)
-                          }`,
-                          transition: "background-color 200ms ease, border-color 200ms ease",
-                        }}
-                      >
-                        <Stack direction="row" spacing={1} sx={{
-                          alignItems: "center"
-                        }}>
-                          <Autocomplete
-                            fullWidth
-                            size="small"
-                            options={faceTagOptions}
-                            slotProps={{ paper: { sx: { fontSize: "0.8rem" } } }}
-                            groupBy={(opt) =>
-                              opt.kind === "person"
-                                ? "Родственники"
-                                : "Справочник"
-                            }
-                            getOptionLabel={(opt) => opt.label}
-                            isOptionEqualToValue={(a, b) =>
-                              a?.kind === b?.kind && a?.id === b?.id
-                            }
-                            value={faceTagOptionFromFace(
-                              face,
-                              allPeople,
-                              allExternal,
-                            )}
-                            onChange={(_, option) => {
-                              const next = faces.map((f) =>
-                                f.id === face.id
-                                  ? applyFaceTagOption(f, option)
-                                  : f,
-                              );
-                              handleFacesChange(next);
-                              setSelectedFaceId(face.id);
-                            }}
-                            renderInput={(params) => (
-                              <TextField
-                                {...params}
-                                label={`Лицо ${index + 1}`}
-                                onFocus={() => setSelectedFaceId(face.id)}
-                                sx={{
-                                  "& .MuiOutlinedInput-root": {
-                                    borderRadius: "12px",
-                                  },
-                                  "& .MuiInputBase-input": {
-                                    fontSize: "0.8rem",
-                                  },
-                                  "& .MuiInputLabel-root": {
-                                    fontSize: "0.75rem",
-                                  },
-                                }}
-                              />
-                            )}
-                          />
-
-                          <IconButton
-                            size="small"
-                            color="error"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              const next = faces.filter(
-                                (f) => f.id !== face.id,
-                              );
-                              handleFacesChange(next);
-                              if (selectedFaceId === face.id)
-                                setSelectedFaceId(null);
-                            }}
-                            sx={{
-                              borderRadius: "8px",
-                              flexShrink: 0,
-                              bgcolor: alpha(theme.palette.error.main, 0.12),
-                              "&:hover": {
-                                bgcolor: alpha(theme.palette.error.main, 0.2),
-                              },
-                            }}
-                          >
-                            <DeleteOutlineOutlinedIcon fontSize="small" />
-                          </IconButton>
-                        </Stack>
-
-                        {hasSuggestion &&
-                          !face.personId &&
-                          !face.externalEntityId && (
-                            <Stack
-                              direction="row"
-                              spacing={1}
-                              onClick={() => setSelectedFaceId(face.id)}
-                              sx={{
-                                alignItems: "center",
-                                mt: 1,
-                                cursor: "pointer"
-                              }}>
-                              <TextField
-                                size="small"
-                                fullWidth
-                                disabled
-                                label={`Предложено${
-                                  face.suggestDistance != null
-                                    ? ` (${distanceToConfidence(face.suggestDistance)}%)`
-                                    : ""
-                                }`}
-                                value={
-                                  suggestedPerson
-                                    ? getPersonLabel(suggestedPerson)
-                                    : getExternalEntityLabel(suggestedExternal)
-                                }
-                                sx={{
-                                  pointerEvents: "none",
-                                  "& .MuiOutlinedInput-root": {
-                                    borderRadius: "12px",
-                                    bgcolor: "transparent",
-                                    "& fieldset": {
-                                      borderStyle: "dashed",
-                                      borderColor: alpha(
-                                        theme.palette.primary.main,
-                                        isSelected ? 0.8 : 0.4,
-                                      ),
-                                    },
-                                  },
-                                  "& .MuiInputBase-input.Mui-disabled": {
-                                    WebkitTextFillColor:
-                                      theme.palette.primary.main,
-                                    fontWeight: 600,
-                                    fontSize: "0.85rem",
-                                  },
-                                  "& .MuiInputLabel-root.Mui-disabled": {
-                                    color: theme.palette.primary.main,
-                                    fontWeight: 500,
-                                  },
-                                }}
-                              />
-                              <Tooltip title="Подтвердить предложение">
-                                <IconButton
-                                  size="small"
-                                  color="success"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    handleAcceptSuggestion(face);
-                                  }}
-                                  sx={{
-                                    flexShrink: 0,
-                                    borderRadius: "8px",
-                                    bgcolor: alpha(
-                                      theme.palette.success.main,
-                                      0.12,
-                                    ),
-                                    color: theme.palette.success.main,
-                                    "&:hover": {
-                                      bgcolor: alpha(
-                                        theme.palette.success.main,
-                                        0.25,
-                                      ),
-                                    },
-                                  }}
-                                >
-                                  <CheckIcon fontSize="small" />
-                                </IconButton>
-                              </Tooltip>
-                            </Stack>
-                          )}
-                      </Box>
-                    );
-                  })}
-                </Stack>
               )}
             </Box>
 

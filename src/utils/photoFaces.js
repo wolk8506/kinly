@@ -47,6 +47,10 @@ export function normalizeFaces(faces) {
         face.suggestDistance = Number(f.suggestDistance);
       }
 
+      if (f.suggestedMatchReference && typeof f.suggestedMatchReference === "object") {
+        face.suggestedMatchReference = f.suggestedMatchReference;
+      }
+
       if (f.externalEntityId) {
         face.externalEntityId = String(f.externalEntityId);
       }
@@ -69,6 +73,66 @@ export function syncPeopleFromFaces(faces, existingPeople = []) {
 }
 
 /** externalPeople[] синхронизируется с faces + сохраняет ручные id */
+/** Добавить участника снимка (без дубликатов). */
+export function addAttendeeToPhoto(state, option) {
+  const people = [...(state.people || [])];
+  const externalPeople = [...(state.externalPeople || [])];
+  if (option?.kind === "person" && !people.includes(option.id)) {
+    people.push(option.id);
+  }
+  if (option?.kind === "external" && !externalPeople.includes(option.id)) {
+    externalPeople.push(option.id);
+  }
+  return {
+    people,
+    externalPeople,
+    faces: normalizeFaces(state.faces),
+  };
+}
+
+function clearFaceAssignment(face) {
+  return {
+    ...face,
+    personId: null,
+    externalEntityId: undefined,
+    suggestedPersonId: undefined,
+    suggestedExternalEntityId: undefined,
+    suggestDistance: undefined,
+    suggestedMatchReference: undefined,
+  };
+}
+
+/**
+ * Убрать участника из списка и снять подпись с рамок (геометрию оставить).
+ */
+export function removeAttendeeFromPhoto(state, attendee) {
+  const faces = normalizeFaces(state.faces).map((face) => {
+    if (attendee?.kind === "person" && face.personId != null && String(face.personId) === String(attendee.id)) {
+      return clearFaceAssignment(face);
+    }
+    if (
+      attendee?.kind === "external" &&
+      face.externalEntityId &&
+      String(face.externalEntityId) === String(attendee.id)
+    ) {
+      return clearFaceAssignment(face);
+    }
+    return face;
+  });
+
+  let people = [...(state.people || [])];
+  let externalPeople = [...(state.externalPeople || [])];
+  if (attendee?.kind === "person") {
+    people = people.filter((id) => String(id) !== String(attendee.id));
+  } else if (attendee?.kind === "external") {
+    externalPeople = externalPeople.filter(
+      (id) => String(id) !== String(attendee.id),
+    );
+  }
+
+  return { people, externalPeople, faces };
+}
+
 export function syncExternalPeopleFromFaces(faces, existingExternal = []) {
   const fromFaces = faces
     .map((f) => f.externalEntityId)

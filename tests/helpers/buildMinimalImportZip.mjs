@@ -106,8 +106,8 @@ export async function buildMinimalImportZip(outPath, opts = {}) {
     const sqliteWork = await mkdtemp(join(tmpdir(), "genealogy-sqlite-"));
     try {
       createValidFaceSqliteInDir(sqliteWork);
-      const sqliteBytes = await readFile(join(sqliteWork, "genealogy.sqlite"));
-      archive.append(sqliteBytes, { name: "genealogy.sqlite" });
+      const sqliteBytes = await readFile(join(sqliteWork, "kinly.sqlite"));
+      archive.append(sqliteBytes, { name: "kinly.sqlite" });
     } finally {
       await rm(sqliteWork, { recursive: true, force: true });
     }

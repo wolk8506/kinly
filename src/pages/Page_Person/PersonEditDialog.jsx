@@ -27,6 +27,10 @@ import DialogActionButton, {
 import CustomDatePickerDialog from "../../components/CustomDatePickerDialog";
 import NumberField from "../../components/NumberField";
 import useDialogSaveHotkey from "../../hooks/useDialogSaveHotkey";
+import {
+  glassPaperSx,
+  glassBackdropSx,
+} from "../../components/Dialog/glassDialog";
 
 export default function PersonEditDialog({
   open,
@@ -36,7 +40,6 @@ export default function PersonEditDialog({
   allPeople = [],
 }) {
   const theme = useTheme();
-  const isDark = theme.palette.mode === "dark";
   const addNotification = useNotificationStore(
     (state) => state.addNotification,
   );
@@ -304,17 +307,13 @@ export default function PersonEditDialog({
         fullWidth
         maxWidth="sm"
         slotProps={{
+          backdrop: { sx: glassBackdropSx },
           paper: {
-            sx: {
-              borderRadius: "24px",
-              backgroundImage: "none",
-              bgcolor: isDark
-                ? alpha(theme.palette.background.paper, 0.85)
-                : "#fff",
-              backdropFilter: "blur(16px)",
-              border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
-              boxShadow: theme.shadows[24],
-            },
+            sx: (t) => ({
+              ...glassPaperSx(t),
+              width: "100%",
+              maxWidth: 600,
+            }),
           }
         }}
       >

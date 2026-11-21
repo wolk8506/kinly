@@ -264,7 +264,7 @@ ipcMain.handle("get-detailed-storage-stats", async () => {
       }
     }
 
-    if (file === "genealogy.sqlite" || file === "genealogy.sqlite-wal" || file === "genealogy.sqlite-shm") {
+    if (file === "kinly.sqlite" || file === "kinly.sqlite-wal" || file === "kinly.sqlite-shm") {
       stats.sqlite += getFileSize(filePath);
     }
   });

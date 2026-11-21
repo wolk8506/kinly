@@ -1,4 +1,5 @@
 const { ipcMain, app, shell } = require("electron");
+const { spawn } = require("child_process");
 const { getMainWindow } = require("./mainWindow.cjs");
 const log = require("./logger.cjs").createLogger("autoUpdater");
 
@@ -136,6 +137,44 @@ function launchInstaller(filePath) {
   });
 }
 
+// После запуска установщика приложение завершается, поэтому папку
+// KinlyUpdater удаляет отдельный отцепленный процесс: на macOS/Linux —
+// через несколько секунд, на Windows — с повторами, пока установщик
+// (запущенный exe) не отпустит файл.
+function scheduleUpdaterDirCleanup(filePath) {
+  const dir = path.dirname(filePath);
+  const psDir = dir.replace(/'/g, "''");
+  const shDir = dir.replace(/'/g, "'\\''");
+
+  let cmd;
+  let args;
+  if (process.platform === "win32") {
+    cmd = "powershell.exe";
+    args = [
+      "-NoProfile",
+      "-WindowStyle",
+      "Hidden",
+      "-Command",
+      `$d='${psDir}'; for($i=0;$i -lt 60;$i++){ try{ Remove-Item -LiteralPath $d -Recurse -Force -ErrorAction Stop; break } catch { Start-Sleep -Seconds 10 } }`,
+    ];
+  } else {
+    cmd = "/bin/sh";
+    args = ["-c", `sleep 5; rm -rf -- '${shDir}'`];
+  }
+
+  try {
+    const child = spawn(cmd, args, {
+      detached: true,
+      stdio: "ignore",
+      windowsHide: true,
+    });
+    child.unref();
+    log.info("🧹 очистка папки обновлений запланирована:", dir);
+  } catch (err) {
+    log.warn("⚠️ не удалось запланировать очистку папки обновлений:", err.message);
+  }
+}
+
 function setupAutoUpdater(win) {
   log.info("🛠 setupAutoUpdater инициализирован");
   let updateInfo = null;
@@ -177,16 +216,16 @@ function setupAutoUpdater(win) {
 
     // делаем абсолютный URL
     if (!/^https?:\/\//.test(rawUrl)) {
-      rawUrl = `https://github.com/wolk8506/genealogy/releases/download/${updateInfo.version}/${rawUrl}`;
+      rawUrl = `https://github.com/wolk8506/kinly/releases/download/${updateInfo.version}/${rawUrl}`;
     }
     log.info("🔗 final download URL:", rawUrl);
 
-    const downloadDir = path.join(app.getPath("downloads"), "GenealogyUpdater");
+    const downloadDir = path.join(app.getPath("downloads"), "KinlyUpdater");
     fs.mkdirSync(downloadDir, { recursive: true });
 
     const outputPath = path.join(
       downloadDir,
-      `Genealogy-${updateInfo.version}${targetExt}`
+      `Kinly-${updateInfo.version}${targetExt}`
     );
     log.info("📥 скачиваем в:", outputPath);
 
@@ -219,6 +258,7 @@ function setupAutoUpdater(win) {
     try {
       log.info("🚀 запуск установщика:", filePath);
       await launchInstaller(filePath);
+      scheduleUpdaterDirCleanup(filePath);
     } catch (err) {
       fail(err.message);
       return;
@@ -230,10 +270,14 @@ function setupAutoUpdater(win) {
 
   // 4) Старые загрузки чистим, свежие оставляем: если установщик не
   // запустился, пользователь может открыть его вручную даже после перезапуска.
-  const tempDir = path.join(app.getPath("downloads"), "GenealogyUpdater");
+  const tempDir = path.join(app.getPath("downloads"), "KinlyUpdater");
   const WEEK = 7 * 24 * 60 * 60 * 1000;
   fs.readdir(tempDir, { withFileTypes: true }, (err, entries) => {
     if (err) return;
+    if (entries.length === 0) {
+      fs.rmdir(tempDir, () => {});
+      return;
+    }
     entries.forEach((entry) => {
       const filePath = path.join(tempDir, entry.name);
       fs.stat(filePath, (statErr, stats) => {

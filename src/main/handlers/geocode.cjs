@@ -87,7 +87,7 @@ async function fetchCoordinates(query) {
   // Node 18+: глобальный fetch, без зависимостей.
   const response = await fetch(url, {
     headers: {
-      "User-Agent": "GenealogyApp/1.0 (contact: local)",
+      "User-Agent": "KinlyApp/1.0 (contact: local)",
       Referer: "https://localhost/",
     },
   });
@@ -116,7 +116,7 @@ async function fetchPlaceName(lat, lng) {
     `&lat=${lat}&lon=${lng}&accept-language=ru`;
   const response = await fetch(url, {
     headers: {
-      "User-Agent": "GenealogyApp/1.0 (contact: local)",
+      "User-Agent": "KinlyApp/1.0 (contact: local)",
       Referer: "https://localhost/",
     },
   });
@@ -187,7 +187,7 @@ ipcMain.handle("geo:forward", async (_, query) => {
 async function fetchIpLocation() {
   try {
     const response = await fetch("https://ipapi.co/json/", {
-      headers: { "User-Agent": "GenealogyApp/1.0 (contact: local)" },
+      headers: { "User-Agent": "KinlyApp/1.0 (contact: local)" },
     });
     if (response.ok) {
       const data = await response.json();

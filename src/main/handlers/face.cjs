@@ -8,6 +8,7 @@ const {
   saveFaceScanState,
   getFaceScanState,
   reassignReferencesToPerson,
+  deleteReferencesForPhoto,
 } = require("../db/faceDb.cjs");
 const { writePhotosMeta } = require("./photosMetaStore.cjs");
 
@@ -27,6 +28,10 @@ ipcMain.handle("face:saveScanState", async (event, scanState) => {
 
 ipcMain.handle("face:getScanState", async () => {
   return getFaceScanState() || null;
+});
+
+ipcMain.handle("face:deleteReferencesForPhoto", async (_event, { owner, photoId }) => {
+  return deleteReferencesForPhoto(owner, photoId);
 });
 
 ipcMain.handle("face:mergePersonIds", async (event, { keepPersonId, removePersonIds }) => {

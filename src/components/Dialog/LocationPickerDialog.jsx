@@ -26,6 +26,7 @@ import { MapContainer, Marker, useMap, useMapEvents } from "react-leaflet";
 import DialogActionButton, {
   DialogActionsBar,
 } from "./DialogActionButton";
+import { glassPaperSx, glassBackdropSx } from "./glassDialog";
 import MapStyleSwitcher, {
   MapBaseTileLayer,
 } from "../MapStyleSwitcher";
@@ -483,14 +484,14 @@ export default function LocationPickerDialog({
       onClose={handleClose}
       maxWidth={false}
       slotProps={{
+        backdrop: { sx: glassBackdropSx },
         paper: {
-          sx: {
-            borderRadius: "24px",
-            backgroundImage: "none",
+          sx: (t) => ({
+            ...glassPaperSx(t),
             width: 560,
             maxWidth: "94vw",
             overflow: "hidden",
-          },
+          }),
         }
       }}
     >

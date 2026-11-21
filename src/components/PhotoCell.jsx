@@ -119,7 +119,10 @@ const PhotoCell = React.memo(
           // остаются внутри неё и не перекрывают залипающую полосу группы.
           zIndex: 0,
           overflow: "hidden", // КРИТИЧНО: обрезает всё, что выходит за границы
-          bgcolor: isDark ? "#1e1e1e" : "#f0f0f0",
+          bgcolor: (t) =>
+            t.palette.mode === "dark"
+              ? t.palette.background.paper
+              : "#f0f0f0",
           boxShadow: selected ? 2 : hover ? 6 : 1,
           transition: "box-shadow 200ms ease, border-color 200ms ease",
           "&:focus-within .photo-card-actions": {

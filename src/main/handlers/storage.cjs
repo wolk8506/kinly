@@ -1,5 +1,5 @@
 // handlers/storage.cjs — переключение корня данных (места хранения).
-// Активный корень: getActiveRoot() из config.cjs (по умолчанию Documents/Genealogy).
+// Активный корень: getActiveRoot() из config.cjs (по умолчанию Documents/Kinly).
 const { ipcMain, dialog, app } = require("electron");
 const fs = require("fs");
 const path = require("path");
@@ -167,7 +167,7 @@ ipcMain.handle("storage:consume-startup-notice", async () => {
 
 ipcMain.handle("storage:choose", async () => {
   const result = await dialog.showOpenDialog({
-    title: "Выберите папку данных Genealogy",
+    title: "Выберите папку данных Kinly",
     defaultPath: getActiveRoot(),
     properties: ["openDirectory", "createDirectory"],
   });

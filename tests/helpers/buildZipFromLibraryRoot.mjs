@@ -85,11 +85,11 @@ export async function buildZipFromLibraryRoot(libraryRoot, outPath, opts = {}) {
     }
   }
 
-  const sqlitePath = join(libraryRoot, "genealogy.sqlite");
+  const sqlitePath = join(libraryRoot, "kinly.sqlite");
   try {
     const sqliteStat = await stat(sqlitePath);
     if (sqliteStat.isFile()) {
-      archive.file(sqlitePath, { name: "genealogy.sqlite" });
+      archive.file(sqlitePath, { name: "kinly.sqlite" });
     }
   } catch {
     // без SQLite

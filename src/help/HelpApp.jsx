@@ -6,6 +6,7 @@ import { SYSTEM_FONT, getHelpColors, isMac, useHelpThemeMode } from "./helpTheme
 import HelpSidebar, { TOOLBAR_HEIGHT } from "./HelpSidebar";
 import HelpToolbar from "./HelpToolbar";
 import { HelpGroup, HelpHome, HelpSearchResults, HelpTopic } from "./HelpPages";
+import appIconUrl from "../../build/icons/app-icon.png";
 
 const HOME = "home";
 
@@ -167,7 +168,7 @@ export default function HelpApp() {
       <HelpHome
         guide={guide}
         version={version}
-        iconSrc="./app-icon.png"
+        iconSrc={appIconUrl}
         onNavigate={navigate}
         onShowSidebar={showContents}
         colors={colors}

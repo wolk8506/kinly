@@ -11,6 +11,7 @@
 | Toolbar tokens | `src/layout/toolbarTokens.js` | App bar capsule metrics — edit here, not `docs/design/tokens.md` tables |
 | `DialogActionButton` | `src/components/Dialog/DialogActionButton.jsx` | **Modal / dialog footers**; tones: `primary`, `secondary`, `danger` |
 | `DialogActionsBar` | same file | Flex row for dialog buttons (`dialogActionsSx`) |
+| `glassPaperSx` / `glassBackdropSx` | `src/components/Dialog/glassDialog.js` | **Mandatory** glass material for every MUI `Dialog` paper + backdrop (see `patterns.md` § Modal dialog) |
 | `ToolbarButtonGroup` | `src/components/ToolbarButtonGroup.jsx` | **App bar** glass capsule; 1–N children; auto **single** vs **group** padding (see `patterns.md`) |
 | `ButtonConteiner` | `src/components/ButtonConteiner.jsx` | 1–N icon buttons; single child → full-bleed **36×36** hit |
 | `ToolbarCapsuleContext` | `src/components/ToolbarCapsuleContext.jsx` | `useToolbarCapsuleSingle`, `useToolbarButtonGroupHitSx`, `useToolbarSegmentSx`, `ToolbarSegmentHit` |
@@ -41,7 +42,18 @@ Do **not** use raw `Button` for standard actions in new code — pick `AppButton
 | Component | Path | Use |
 |-----------|------|-----|
 | `PhotoFaceOverlay` | `src/components/PhotoFaceOverlay.jsx` | Face boxes; draw, move (RMB), resize handle |
-| `PhotoMetaUpdateDialog` | `src/components/Dialog/PhotoMetaUpdateDialog.jsx` | Photo metadata + faces reference layout |
+| `PhotoMetaDialog` | `src/components/Dialog/PhotoMetaDialog.jsx` | Photo metadata dialog |
+| `PhotoOwnerField` | `src/components/PhotoOwnerField.jsx` | Person picker field (photo/event dialogs) |
+| `PhotoAttendeesList` | `src/components/PhotoAttendeesList.jsx` | Attendees chips + add-person picker |
+| `FaceTagPicker` | `src/components/PhotoFaceMarkupBlocks.jsx` | Person/entity picker row (faces, relations) |
+| `PhotoFaceFormSection` | same file | Faces-on-photo block (upload dialog, faces dialog, review queue) |
+
+## Dialog form fields
+
+| Export | Path | Use |
+|--------|------|-----|
+| `sectionLabelSx`, `fieldBlockSx`, `fieldRowSx`, `fieldTitleSx`, `fieldValueSx`, `inputSx` | `src/components/dialogFieldStyles.js` | Field blocks/rows/inputs in photo-style dialogs — see `patterns.md` |
+| `TypePickerField` | local in `AddExternalEntityDialog.jsx` | Label + value + chevron picker row; candidate for extraction if reused |
 
 ## Content
 

@@ -17,6 +17,10 @@ import AppButton from "../../components/AppButton";
 import DialogActionButton, {
   DialogActionsBar,
 } from "../../components/Dialog/DialogActionButton";
+import {
+  glassPaperSx,
+  glassBackdropSx,
+} from "../../components/Dialog/glassDialog";
 import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
 import {
   groupSx,
@@ -297,8 +301,11 @@ export const DangerZoneCard = ({ cardStyle }) => {
         fullWidth
         transitionDuration={{ enter: 180, exit: 140 }}
         slotProps={{
+          backdrop: { sx: glassBackdropSx },
           paper: {
-            sx: { borderRadius: "24px", backgroundImage: "none" },
+            sx: (t) => ({
+              ...glassPaperSx(t),
+            }),
           }
         }}
       >
@@ -321,7 +328,7 @@ export const DangerZoneCard = ({ cardStyle }) => {
               lineHeight: 1.5
             }}>
             Это действие безвозвратно удалит <b>всех людей</b> и{" "}
-            <b>все фотографии</b> из папки Genealogy. Приложение станет
+            <b>все фотографии</b> из папки Kinly. Приложение станет
             абсолютно чистым.
           </Typography>
           <TextField

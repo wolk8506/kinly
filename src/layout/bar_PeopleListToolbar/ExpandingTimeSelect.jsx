@@ -21,7 +21,7 @@ import HistoryToggleOffIcon from "@mui/icons-material/HistoryToggleOff";
 import EventNoteIcon from "@mui/icons-material/EventNote";
 import { ToolbarSegmentHit } from "../../components/ToolbarCapsuleContext";
 import { TOOLBAR_HIT, TOOLBAR_MENU } from "../toolbarTokens";
-import { popoverArrowSx } from "../../theme/popoverArrow";
+import GlassBubbleLayers from "../../components/GlassBubbleLayers";
 
 const timeOptions = [
   {
@@ -135,22 +135,20 @@ export default function ExpandingTimeSelect({
         slotProps={{
           paper: {
             sx: {
-              mt: 1.5,
+              mt: 2,
               minWidth: 180,
-              borderRadius: TOOLBAR_MENU.paperRadiusPx,
+              borderRadius: 0,
               overflow: "visible",
+              background: "none",
               backgroundImage: "none",
-              bgcolor: (theme) =>
-                theme.palette.mode === "dark" ? "#1E1E1E" : "#FFFFFF",
-              border: "1px solid",
-              borderColor: "divider",
-              // Хвостик меню
-              "&::before": popoverArrowSx(),
+              boxShadow: "none",
+              border: "none",
             },
           },
           list: { sx: { py: 0.5, px: 0.5 } },
         }}
       >
+        <GlassBubbleLayers />
         <Box sx={{ position: "relative", zIndex: 1 }}>
           <Typography
             variant="overline"

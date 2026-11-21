@@ -61,7 +61,7 @@ describe("importZipFromPath → temp mock library", () => {
     });
   });
 
-  it("restores genealogy.sqlite from ZIP", async () => {
+  it("restores kinly.sqlite from ZIP", async () => {
     await withTestLibrary(async (libraryRoot) => {
       const zipWork = await mkdtemp(join(tmpdir(), "genealogy-import-zip-"));
       const zipPath = join(zipWork, "backup-with-db.zip");
@@ -77,9 +77,9 @@ describe("importZipFromPath → temp mock library", () => {
         });
 
         expect(result.ok).toBe(true);
-        expect(result.report.restoredDatabaseFiles).toContain("genealogy.sqlite");
+        expect(result.report.restoredDatabaseFiles).toContain("kinly.sqlite");
 
-        await access(join(libraryRoot, "genealogy.sqlite"), fsConstants.F_OK);
+        await access(join(libraryRoot, "kinly.sqlite"), fsConstants.F_OK);
 
         closeFaceDb();
         initializeFaceDb();

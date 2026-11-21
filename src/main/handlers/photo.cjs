@@ -11,6 +11,7 @@ const {
   readPhotosMeta,
   updatePhotosMeta,
 } = require("./photosMetaStore.cjs");
+const { deleteReferencesForPhoto } = require("../db/faceDb.cjs");
 
 module.exports = (settingsStore) => {
   global.globalHashtags = new Set();
@@ -71,9 +72,7 @@ module.exports = (settingsStore) => {
       }
 
       global.globalHashtags = newTags;
-      log.info(
-        `✅ Итоговый индекс: [${Array.from(globalHashtags).join(", ")}]`,
-      ); // ЛОГ 3
+      log.info(`✅ Хештегов в индексе: ${globalHashtags.size}`);
     } catch (err) {
       log.error("❌ Критическая ошибка сканера:", err);
     }
@@ -291,7 +290,7 @@ module.exports = (settingsStore) => {
           ...meta,
           id: Date.now(),
           filename: originalFilename, // ✅ Сохраняем оригинальный формат
-          locationName: locationName, // Добавляем в объект для БД
+          locationName: locationName || meta.locationName || null, // Добавляем в объект для БД
           date: meta.date || new Date().toISOString().split("T")[0],
         };
 
@@ -430,6 +429,14 @@ module.exports = (settingsStore) => {
     await updatePhotosMeta(personId, (list) =>
       list.filter((p) => p.id !== id),
     );
+
+    const faceCleanup = deleteReferencesForPhoto(personId, id);
+    if (faceCleanup.deleted > 0) {
+      log.info(
+        `Удалены face_references для фото owner=${personId} photoId=${id}: ${faceCleanup.deleted}`,
+      );
+    }
+
     return true;
   });
 

@@ -466,7 +466,7 @@ export const StatisticCard = ({ cardStyle }) => {
                         value: formatSize(storageStats?.externalJson || 0),
                       },
                       {
-                        label: "SQLite (genealogy.sqlite)",
+                        label: "SQLite (kinly.sqlite)",
                         value: formatSize(storageStats?.sqlite || 0),
                       },
                     ]}

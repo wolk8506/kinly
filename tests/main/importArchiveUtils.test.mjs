@@ -38,6 +38,8 @@ describe("importArchiveUtils", () => {
   });
 
   it("isDatabaseArtifact detects sqlite siblings", () => {
+    expect(isDatabaseArtifact("foo/kinly.sqlite-wal")).toBe(true);
+    // Архивы до переименования БД тоже распознаются.
     expect(isDatabaseArtifact("foo/genealogy.sqlite-wal")).toBe(true);
     expect(isDatabaseArtifact("notes.txt")).toBe(false);
   });

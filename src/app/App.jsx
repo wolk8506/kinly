@@ -13,20 +13,23 @@ import { ThemeContext } from "../theme/ThemeContext.js";
 import { useSettingsStore } from "../store/useSettingsStore";
 import { getPalette } from "../theme/palette";
 import { MOTION, RADIUS } from "../theme/designTokens";
-
-const pulse = keyframes`
-  0%, 100% { transform: scale(0.96); opacity: 0.7; }
-  50% { transform: scale(1.04); opacity: 1; }
-`;
+import appIcon from "../../build/icons/icon.png";
 
 // Системный шрифт: SF Pro на macOS, Segoe UI на Windows.
 const SYSTEM_FONT =
   '-apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Segoe UI", Roboto, "Helvetica Neue", sans-serif';
 
-const orbit = keyframes`
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
+const wave = keyframes`
+  0%, 100% { opacity: 0.12; }
+  50% { opacity: 1; }
 `;
+
+// Точки iOS-спиннера: цвета по кругу, как в boot-splash (index.html).
+const BOOT_DOT_COLORS = [
+  "#7f9cff", "#78a7f5", "#71b2ec", "#6abde2",
+  "#63c8d9", "#5bd3cf", "#54ddc5", "#5cd1d0",
+  "#65c4dc", "#6eb7e8", "#76a9f3", "#7f9cff",
+];
 
 const compactButton = {
   height: 24,
@@ -276,7 +279,18 @@ export default function App() {
             },
           },
 
-          // 5. Глобальная настройка для всех TextField (включая DatePicker)
+          // 5. Тултипы как в macOS: первая задержка ~0.6с,
+          // последующие после недавнего тултипа — почти мгновенно,
+          // после паузы задержка снова включается.
+          MuiTooltip: {
+            defaultProps: {
+              enterDelay: 600,
+              enterNextDelay: 150,
+              leaveDelay: 0,
+            },
+          },
+
+          // 6. Глобальная настройка для всех TextField (включая DatePicker)
           MuiTextField: {
             defaultProps: {
               size: "small", // Чтобы везде по умолчанию был маленький размер
@@ -340,58 +354,46 @@ export default function App() {
             "radial-gradient(1200px 600px at 20% 20%, rgba(49,84,255,0.18), transparent 55%), radial-gradient(900px 600px at 80% 70%, rgba(0,219,176,0.13), transparent 60%), linear-gradient(160deg, #05070d 0%, #0b1021 45%, #06080f 100%)",
         }}
       >
-        {[...Array(8)].map((_, i) => (
+        {/* Тот же layout, что в pre-React splash (index.html): логотип
+            148px + спиннер 44px — переход между экранами незаметен. */}
+        <Box
+          sx={{
+            width: 220,
+            height: 220,
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: "18px",
+          }}
+        >
           <Box
-            key={`particle-${i}`}
-            sx={{
-              position: "absolute",
-              width: 6,
-              height: 6,
-              borderRadius: "50%",
-              bgcolor: "rgba(121, 158, 255, 0.55)",
-              top: `${15 + (i * 9)}%`,
-              left: `${8 + ((i * 11) % 84)}%`,
-              filter: "blur(0.2px)",
-              animation: `${pulse} ${2.2 + i * 0.25}s ease-in-out infinite`,
-              animationDelay: `${i * 0.18}s`,
-            }}
+            component="img"
+            src={appIcon}
+            alt="Kinly"
+            sx={{ width: 148, height: 148, objectFit: "contain" }}
           />
-        ))}
-
-        <Box sx={{ position: "relative", display: "grid", placeItems: "center" }}>
           <Box
-            sx={{
-              width: 220,
-              height: 220,
-              borderRadius: "50%",
-              border: "1px solid rgba(120, 170, 255, 0.22)",
-              animation: `${orbit} 7.5s linear infinite`,
-              position: "absolute",
-              "&::before": {
-                content: '""',
-                position: "absolute",
-                width: 10,
-                height: 10,
-                borderRadius: "50%",
-                top: 16,
-                left: "50%",
-                transform: "translateX(-50%)",
-                bgcolor: "#7f9cff",
-                boxShadow: "0 0 16px rgba(127,156,255,0.85)",
-              },
-            }}
-          />
-
-          <Box
-            sx={{
-              width: 150,
-              height: 150,
-              borderRadius: "50%",
-              border: "1px dashed rgba(84, 222, 197, 0.35)",
-              animation: `${orbit} 5.4s linear infinite reverse`,
-              position: "absolute",
-            }}
-          />
+            component="svg"
+            viewBox="0 0 100 100"
+            sx={{ width: 44, height: 44, flexShrink: 0 }}
+          >
+            {BOOT_DOT_COLORS.map((color, i) => (
+              <Box
+                component="circle"
+                key={i}
+                cx={92}
+                cy={50}
+                r={4}
+                fill={color}
+                transform={i === 0 ? undefined : `rotate(${i * 30} 50 50)`}
+                sx={{
+                  animation: `${wave} 1.2s ease-in-out infinite`,
+                  animationDelay: `${-(BOOT_DOT_COLORS.length - 1 - i) * 0.1}s`,
+                }}
+              />
+            ))}
+          </Box>
         </Box>
       </Box>
     );

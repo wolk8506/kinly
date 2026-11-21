@@ -86,7 +86,7 @@ describe("mock:library → ZIP → import (tmpdir only)", () => {
             expect(files.length).toBeGreaterThan(0);
           }
 
-          const sqlitePath = join(libraryRoot, "genealogy.sqlite");
+          const sqlitePath = join(libraryRoot, "kinly.sqlite");
           if (await access(sqlitePath, fsConstants.F_OK).then(() => true).catch(() => false)) {
             closeFaceDb();
             initializeFaceDb();

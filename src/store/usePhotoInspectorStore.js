@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import { normalizeFaces } from "../utils/photoFaces";
 
 // Поля фото, редактируемые в правой панели.
 export function draftFromPhoto(photo) {
@@ -13,6 +14,7 @@ export function draftFromPhoto(photo) {
     lat: photo?.lat ?? null,
     lng: photo?.lng ?? null,
     filename: photo?.filename ?? "",
+    faces: normalizeFaces(photo?.faces),
   };
 }
 

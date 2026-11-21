@@ -8,6 +8,7 @@ import {
   Male as MaleIcon,
   Female as FemaleIcon,
   ChevronRight as ChevronRightIcon,
+  AccountTree as AccountTreeIcon,
 } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
 import {
@@ -92,11 +93,18 @@ export default function GenealogyTreeInspector({
             p: 2,
           }}
         >
-          <Typography variant="body2" sx={{
-            color: "text.secondary"
-          }}>
-            Выберите человека в дереве для просмотра информации
-          </Typography>
+          <Box sx={groupSx}>
+            <SettingsRow
+              icon={
+                <RowIcon bg="gray">
+                  <AccountTreeIcon sx={{ fontSize: 18 }} />
+                </RowIcon>
+              }
+              title="Человек не выбран"
+              subtitle="Выберите человека в дереве — здесь появится его информация."
+              multiline
+            />
+          </Box>
         </Box>
       </Drawer>
     );

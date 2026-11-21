@@ -6,7 +6,7 @@
 flowchart LR
   subgraph main [Electron main]
     Handlers[handlers/*.cjs]
-    FS[Genealogy folder on disk]
+    FS[Kinly folder on disk]
   end
   subgraph preload [preload.js]
     APIs[contextBridge APIs]
@@ -21,7 +21,7 @@ flowchart LR
   Pages --> Services
 ```
 
-- **Main**: file I/O, dialogs, Sharp, SQLite (`genealogy.sqlite` via `src/main/db/faceDb.cjs`), JSON under `~/Documents/Genealogy/` and `people/{id}/`.
+- **Main**: file I/O, dialogs, Sharp, SQLite (`kinly.sqlite` via `src/main/db/faceDb.cjs`), JSON under `~/Documents/Kinly/` and `people/{id}/`.
 - **Preload**: `photoAPI`, `peopleAPI`, `faceAPI`, `avatarAPI`, `appAPI`, … — no direct `fs` in renderer.
 - **Renderer**: UI, `@vladmandic/face-api` (local models in `public/face-models/`).
 
@@ -29,9 +29,9 @@ flowchart LR
 
 ```mermaid
 flowchart TB
-  Root[~/Documents/Genealogy]
+  Root[~/Documents/Kinly]
   Root --> PeopleJson[genealogy-data.json]
-  Root --> Sqlite[genealogy.sqlite]
+  Root --> Sqlite[kinly.sqlite]
   Root --> People[people/id/]
   People --> PhotosJson[photos.json]
   People --> PhotosDir[photos/webp thumbs original]
@@ -42,8 +42,8 @@ flowchart TB
 
 - **People list**: `genealogy-data.json` (`schemaVersion` + `people`) — `dataStore.cjs`, atomic writes.
 - **Per photo**: `photos.json` face record: `id`, `personId`, `box` (0–1), optional `descriptor`, `suggestedPersonId`, `suggestDistance`.
-- **Face index (main)**: `genealogy.sqlite` — reference rows + batch scan state; **geocode** cache in the same DB. Renderer uses `faceAPI` (`face.cjs` → `faceDb.cjs`).
-- **Legacy**: on first open, data from `face-index.json` is imported, file renamed to `face-index.migrated-*.json.bak`. Backup/import ZIP includes `genealogy.sqlite` (+ wal/shm).
+- **Face index (main)**: `kinly.sqlite` — reference rows + batch scan state; **geocode** cache in the same DB. Renderer uses `faceAPI` (`face.cjs` → `faceDb.cjs`).
+- **Legacy**: on first open, data from `face-index.json` is imported, file renamed to `face-index.migrated-*.json.bak`. Backup/import ZIP includes `kinly.sqlite` (+ wal/shm); archives with legacy `genealogy.sqlite` are restored under the new name.
 
 ## Navigation (high level)
 

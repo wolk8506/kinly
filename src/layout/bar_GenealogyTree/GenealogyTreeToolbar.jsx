@@ -18,10 +18,10 @@ import PanToolIcon from "@mui/icons-material/PanTool";
 import TouchAppIcon from "@mui/icons-material/TouchApp";
 import ZoomInIcon from "@mui/icons-material/ZoomIn";
 import SidebarRightIcon from "../../components/svg/SidebarRightIcon";
-import { popoverArrowSx } from "../../theme/popoverArrow";
+import GlassBubbleLayers from "../../components/GlassBubbleLayers";
 import ButtonConteiner from "../../components/ButtonConteiner";
 import GenealogyTreeModeCluster from "./GenealogyTreeModeCluster";
-import { TOOLBAR_HIT, TOOLBAR_MENU } from "../toolbarTokens";
+import { TOOLBAR_HIT } from "../toolbarTokens";
 import {
   toolbarClusterSx,
   toolbarDragSpacerSx,
@@ -113,21 +113,20 @@ export default function GenealogyTreeToolbar({ mode, onModeChange }) {
         slotProps={{
           paper: {
             sx: {
-              mt: 1.5,
+              mt: 2,
               minWidth: 280,
               maxWidth: "calc(100vw - 24px)",
-              borderRadius: TOOLBAR_MENU.paperRadiusPx,
+              borderRadius: 0,
               overflow: "visible",
+              background: "none",
               backgroundImage: "none",
-              bgcolor: (t) =>
-                t.palette.mode === "dark" ? "#1E1E1E" : "#FFFFFF",
-              border: "1px solid",
-              borderColor: "divider",
-              "&::before": popoverArrowSx(),
+              boxShadow: "none",
+              border: "none",
             },
           },
         }}
       >
+        <GlassBubbleLayers tipX={210} />
         <Box sx={{ position: "relative", zIndex: 1, py: 0.5 }}>
           <Typography
             variant="overline"

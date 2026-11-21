@@ -10,7 +10,7 @@ import {
   alpha,
 } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
-import appIcon from "../../img/app_icon.png";
+import appIcon from "../../../build/icons/icon.png";
 
 // Сайдбар настроек в духе macOS: поиск и список разделов
 // с цветными плитками иконок и синей пилюлей выбранного пункта.
@@ -120,7 +120,7 @@ export default function SettingsSidebar({
         <Box
           component="img"
           src={appIcon}
-          alt="Genealogy"
+          alt="Kinly"
           sx={{
             width: 40,
             height: 40,
@@ -137,7 +137,7 @@ export default function SettingsSidebar({
               fontWeight: 700,
               lineHeight: 1.2
             }}>
-            Genealogy
+            Kinly
           </Typography>
           <Typography
             variant="caption"

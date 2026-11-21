@@ -44,11 +44,13 @@ import {
   formatGeocodeEta,
 } from "./mapHelpers";
 import MapLegend from "./MapLegend";
+import MapHelpPopover from "./MapHelpPopover";
 import MapMarkerLayer from "./MapMarkerLayer";
 import MapStyleSwitcher, {
   MapBaseTileLayer,
 } from "../../components/MapStyleSwitcher";
 import { getBaseLayer } from "../../utils/mapLayers";
+import { useSettingsStore } from "../../store/useSettingsStore";
 import { getMyPosition } from "../../utils/geolocate";
 
 const EDIT_PIN_ICON = L.divIcon({
@@ -81,14 +83,17 @@ function FitBounds({ points, fitRequestKey = 0 }) {
   return null;
 }
 
-// Кнопка «Показать все точки» живёт на карте под кнопками зума.
-function FitAllPointsControl({ onFit, disabled }) {
+// Кнопки «Показать все точки» и «?» живут на карте под кнопками зума.
+function FitAllPointsControl({ onFit, disabled, onHelpClick }) {
   const map = useMap();
   const theme = useTheme();
   const [container, setContainer] = useState(null);
 
   useEffect(() => {
     const el = L.DomUtil.create("div", "leaflet-control map-fit-control");
+    el.style.display = "flex";
+    el.style.flexDirection = "column";
+    el.style.gap = "12px";
     L.DomEvent.disableClickPropagation(el);
     L.DomEvent.disableScrollPropagation(el);
     const control = L.control({ position: "topright" });
@@ -104,8 +109,9 @@ function FitAllPointsControl({ onFit, disabled }) {
   if (!container) return null;
 
   return createPortal(
-    <Tooltip title="Показать все точки" placement="left">
-      <span style={{ display: "flex" }}>
+    <>
+      <Tooltip title="Показать все точки" placement="left">
+        <span style={{ display: "flex" }}>
         {/* Подложка — как у переключателя слоёв: стеклянный круг, внутри
             которого кнопка подсвечивается при наведении. */}
         <Box
@@ -144,8 +150,43 @@ function FitAllPointsControl({ onFit, disabled }) {
             <FitScreenIcon sx={{ fontSize: 20 }} />
           </IconButton>
         </Box>
-      </span>
-    </Tooltip>,
+        </span>
+      </Tooltip>
+      {onHelpClick && (
+        <Tooltip title="Управление картой" placement="left">
+          <span style={{ display: "flex" }}>
+            <Box
+              sx={{
+                display: "flex",
+                borderRadius: "50%",
+                overflow: "hidden",
+                bgcolor: theme.palette.glass.surface,
+                boxShadow: "0 2px 12px rgba(0,0,0,0.22)",
+                backdropFilter: "blur(8px)",
+                WebkitBackdropFilter: "blur(8px)",
+              }}
+            >
+              <IconButton
+                aria-label="Управление картой"
+                aria-haspopup="dialog"
+                onClick={onHelpClick}
+                sx={{
+                  width: 36,
+                  height: 36,
+                  p: 0,
+                  borderRadius: "50%",
+                  color: theme.palette.text.primary,
+                  transition: "background-color 160ms ease",
+                  "&:hover": { bgcolor: theme.palette.glass.hover },
+                }}
+              >
+                <HelpOutlineOutlinedIcon sx={{ fontSize: 20 }} />
+              </IconButton>
+            </Box>
+          </span>
+        </Tooltip>
+      )}
+    </>,
     container,
   );
 }
@@ -273,9 +314,15 @@ export default function MapPage({
   const [slideDirection, setSlideDirection] = useState(0);
   const [fullPaths, setFullPaths] = useState({});
   const [baseLayer, setBaseLayer] = useState("osm");
+  const appSettings = useSettingsStore((s) => s.appSettings);
+  const mapThemePref = appSettings.mapTheme || "auto";
+  const mapDark =
+    mapThemePref === "dark" ||
+    (mapThemePref === "auto" && theme.palette.mode === "dark");
   const [locatePos, setLocatePos] = useState(null);
   const [locateTrigger, setLocateTrigger] = useState(0);
   const [locating, setLocating] = useState(false);
+  const [helpAnchor, setHelpAnchor] = useState(null);
   const [editTarget, setEditTarget] = useState(null);
   const [locationPickerOpen, setLocationPickerOpen] = useState(false);
   const [editPos, setEditPos] = useState(null);
@@ -910,7 +957,8 @@ export default function MapPage({
     >
       <style>{`
         .map-custom-marker{background:transparent!important;border:none!important;}
-        .leaflet-top .leaflet-control-zoom{margin-top:104px!important;}
+        .leaflet-top .leaflet-control-zoom{margin-top:100px!important;}
+        .leaflet-control.map-fit-control{margin-top:12px!important;}
         .leaflet-control-zoom.leaflet-bar{
           border:none!important;
           border-radius:18px!important;
@@ -951,6 +999,9 @@ export default function MapPage({
         .leaflet-popup-close-button{
           display:none!important;
         }
+        .map-tiles-darkfilter{
+          filter:invert(0.9) hue-rotate(180deg) brightness(0.8) contrast(0.9) saturate(0.8);
+        }
         .leaflet-popup-content{
           margin:12px 14px!important;
         }
@@ -960,14 +1011,22 @@ export default function MapPage({
         zoom={3}
         zoomControl={false}
         attributionControl={false}
-        style={{ height: "100%", width: "100%", background: "#aad3df" }}
+        style={{
+          height: "100%",
+          width: "100%",
+          background: mapDark ? "#20242a" : "#aad3df",
+        }}
       >
         <ZoomControl position="topright" />
         <FitAllPointsControl
           onFit={() => setFitRequest((k) => k + 1)}
           disabled={loading || visiblePoints.length === 0}
+          onHelpClick={(e) => {
+            const r = e.currentTarget.getBoundingClientRect();
+            setHelpAnchor({ top: r.top, left: r.left });
+          }}
         />
-        <MapBaseTileLayer layer={getBaseLayer(baseLayer)} />
+        <MapBaseTileLayer layer={getBaseLayer(baseLayer, { dark: mapDark })} />
         <FlyToLocation pos={locatePos} trigger={locateTrigger} />
         <FitBounds points={visiblePoints} fitRequestKey={fitRequest} />
         <RememberView />
@@ -990,6 +1049,7 @@ export default function MapPage({
       <MapStyleSwitcher
         baseLayer={baseLayer}
         onChange={setBaseLayer}
+        dark={mapDark}
         showLocate
         onLocate={handleLocate}
         locating={locating}
@@ -1144,35 +1204,10 @@ export default function MapPage({
         )}
       </Box>
 
-      <Tooltip
-        title="Координаты фото — из EXIF, названия мест — через Nominatim (с кэшем). Shift+«Обновить» — перегеокодировать."
-        arrow
-        placement="left"
-        slotProps={{ tooltip: { sx: { maxWidth: 320 } } }}
-      >
-        <IconButton
-          size="small"
-          sx={{
-            position: "absolute",
-            bottom: 12,
-            right: 10,
-            zIndex: 1001,
-            width: 36,
-            height: 36,
-            color: zoomFg,
-            bgcolor: zoomBg,
-            backdropFilter: "blur(8px)",
-            WebkitBackdropFilter: "blur(8px)",
-            boxShadow: "0 2px 12px rgba(0,0,0,0.22)",
-            "&.MuiIconButton-root:hover:not(.Mui-disabled)": {
-              backgroundColor: `${zoomBg} !important`,
-              backgroundImage: `linear-gradient(${theme.palette.glass.hover}, ${theme.palette.glass.hover}) !important`,
-            },
-          }}
-        >
-          <HelpOutlineOutlinedIcon sx={{ fontSize: 20 }} />
-        </IconButton>
-      </Tooltip>
+      <MapHelpPopover
+        anchorEl={helpAnchor}
+        onClose={() => setHelpAnchor(null)}
+      />
 
       <PhotoFullscreenViewer
         open={fullscreen}

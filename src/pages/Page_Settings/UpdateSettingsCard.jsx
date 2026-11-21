@@ -173,7 +173,7 @@ export const UpdateSettingsCard = ({ cardStyle }) => {
                           display: "block"
                         }}>
                         {installFailed
-                          ? "Файл в папке «Загрузки → GenealogyUpdater» — можно запустить его вручную"
+                          ? "Файл в папке «Загрузки → KinlyUpdater» — можно запустить его вручную"
                           : error}
                       </Typography>
                     </Box>

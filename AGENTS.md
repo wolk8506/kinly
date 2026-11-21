@@ -14,8 +14,8 @@
 ## UI stack (confirmed 12.11.2026)
 
 - **New UI**: Base UI (`@base-ui/react`) + app theme tokens (Apple / iOS-like, cross-platform).
-- **MUI**: legacy — date pickers, Autocomplete, complex menus; replace gradually, no big-bang rewrite.
-- Do **not** add new MUI primitives if Base UI has an equivalent.
+- **MUI**: legacy — still acceptable for new dialogs/menus/pickers where rewriting to Base UI is not worth it; the long-term goal is a single Base UI library, so prefer Base UI for genuinely new primitives.
+- Do **not** add new MUI primitives if Base UI has an equivalent — unless it is inside an existing MUI-based dialog/menu that would need a rewrite.
 - MUI and Base UI surfaces must look the same: shared theme, z-index, portals, focus.
 
 ## Design source

@@ -11,7 +11,7 @@ import {
 } from "@mui/material";
 import FormatClearIcon from "@mui/icons-material/FormatClear";
 import CheckIcon from "@mui/icons-material/Check";
-import { popoverArrowSx } from "../../../theme/popoverArrow";
+import GlassBubbleLayers from "../../../components/GlassBubbleLayers";
 import {
   BIO_HIGHLIGHT_COLORS,
   DEFAULT_BIO_HIGHLIGHT_COLOR,
@@ -264,32 +264,24 @@ export default function BioFormatMenu({ execRef }) {
         transitionDuration={{ enter: 140, exit: 100 }}
         slotProps={{
           paper: {
-            sx: (t) => {
-              const dark = t.palette.mode === "dark";
-              const borderColor = dark
-                ? "rgba(255, 255, 255, 0.1)"
-                : t.palette.divider;
-              return {
-                mt: 1.25,
-                width: 222,
-                maxWidth: "calc(100vw - 24px)",
-                borderRadius: "20px",
-                border: "1px solid",
-                borderColor,
-                bgcolor: dark ? "#1E1E1E" : "#FFFFFF",
-                backgroundImage: "none",
-                boxShadow: dark
-                  ? "0 18px 44px rgba(0, 0, 0, 0.55)"
-                  : "0 18px 44px rgba(0, 0, 0, 0.18)",
-                overflow: "visible",
-                "&::before": popoverArrowSx({ borderColor }),
-              };
+            sx: {
+              mt: 2,
+              width: 222,
+              maxWidth: "calc(100vw - 24px)",
+              borderRadius: 0,
+              overflow: "visible",
+              background: "none",
+              backgroundImage: "none",
+              boxShadow: "none",
+              border: "none",
             },
           },
 
           list: { sx: { p: 0 } },
         }}
       >
+        <GlassBubbleLayers />
+        <Box sx={{ position: "relative", zIndex: 1 }}>
         <Box sx={{ px: 1.25, py: 0.5 }}>
           <Box
             sx={{
@@ -452,6 +444,7 @@ export default function BioFormatMenu({ execRef }) {
               Очистить форматирование
             </Typography>
           </ButtonBase>
+        </Box>
         </Box>
       </Menu>
 

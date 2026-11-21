@@ -19,6 +19,7 @@ import {
   CheckCircle as CheckCircleIcon,
 } from "@mui/icons-material";
 import { exportPeopleToZip } from "../utils/exportToZip";
+import { formatImportNotificationMessage } from "../../utils/formatImportNotificationMessage";
 import ErrorIcon from "@mui/icons-material/Error";
 import SaveIcon from "@mui/icons-material/Save";
 import PhotoLibraryIcon from "@mui/icons-material/PhotoLibrary";
@@ -51,7 +52,7 @@ export const BackupRestoreCard = ({ cardStyle, onSubpageChange }) => {
       .toLocaleString("sv-SE", { hour12: false })
       .replace(/[\s:]/g, "-")
       .replace(",", "_");
-    return `Genealogy_Backup_${stamp}`;
+    return `Kinly_Backup_${stamp}`;
   };
 
   // --- Состояние подготовки бэкапа ---
@@ -404,20 +405,14 @@ export const BackupRestoreCard = ({ cardStyle, onSubpageChange }) => {
       }
 
 
-      const externalCount = importResult?.report?.externalImported || 0;
-      const externalFiles = importResult?.report?.externalFiles || 0;
-      const externalError = importResult?.report?.errors?.find(
-        (e) => e.scope === "external",
-      )?.error;
+      const { message, type } = formatImportNotificationMessage(
+        importResult?.report,
+      );
       addNotification({
         timestamp: new Date().toISOString(),
         title: "Импорт",
-        message: externalError
-          ? `Импорт завершён с ошибкой справочника: ${externalError}`
-          : externalCount > 0
-            ? `Импорт выполнен. Справочник: ${externalCount} записей${externalFiles ? `, ${externalFiles} файлов` : ""}.`
-            : "Импорт из ZIP-бэкапа выполнен успешно",
-        type: externalError ? "warning" : "success",
+        message,
+        type,
         category: "dataManagement",
       });
       resetImportSetup();

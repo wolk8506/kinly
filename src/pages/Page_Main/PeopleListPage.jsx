@@ -21,7 +21,7 @@ import SearchOffIcon from "@mui/icons-material/SearchOff";
 import SettingsBackupRestoreIcon from "@mui/icons-material/SettingsBackupRestore";
 import RestoreFromTrashIcon from "@mui/icons-material/RestoreFromTrash";
 
-import appIcon from "../../img/app_icon.png";
+import appIcon from "../../../build/icons/icon.png";
 import { Link } from "react-router-dom";
 import { useNotificationStore } from "../../store/useNotificationStore";
 import { PersonCard } from "./PersonCard";
@@ -361,10 +361,11 @@ export default function PeopleListPage({
                 border: "4px solid",
                 borderColor: "background.paper",
                 boxShadow: theme.shadows[4],
+                "& .MuiAvatar-img": { width: "90%", height: "90%" },
               }}
             />
           }
-          title="Генеалогия"
+          title="Kinly"
           text="Ваше семейное древо пока пустует. Начните историю с первого предка."
           actions={
             <Stack spacing={2} sx={{ width: "100%", mt: 2 }}>
@@ -384,7 +385,7 @@ export default function PeopleListPage({
                 variant="outlined"
                 component={Link}
                 nativeButton={false}
-                to="/settings"
+                to="/settings?section=storage"
                 size="large"
                 startIcon={<SettingsBackupRestoreIcon />}
                 sx={{

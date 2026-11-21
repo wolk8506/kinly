@@ -3,6 +3,10 @@ import { Dialog, Box, Typography } from "@mui/material";
 import { alpha } from "@mui/material/styles";
 import MarkdownViewer from "../components/MarkdownViewer";
 import DialogActionButton from "../components/Dialog/DialogActionButton";
+import {
+  glassPaperSx,
+  glassBackdropSx,
+} from "../components/Dialog/glassDialog";
 
 export default function ChangelogModal() {
   const [open, setOpen] = useState(false);
@@ -40,18 +44,17 @@ export default function ChangelogModal() {
       maxWidth={false}
       transitionDuration={{ enter: 180, exit: 140 }}
       slotProps={{
+        backdrop: { sx: glassBackdropSx },
         paper: {
-          sx: {
+          sx: (t) => ({
+            ...glassPaperSx(t),
             width: 760,
             maxWidth: "94vw",
             height: "min(86vh, 860px)",
-            borderRadius: "24px",
-            backgroundImage: "none",
             display: "flex",
             flexDirection: "column",
-            overflow: "hidden",
             position: "relative",
-          },
+          }),
         }
       }}
     >

@@ -16,6 +16,7 @@ import FolderOpenOutlinedIcon from "@mui/icons-material/FolderOpenOutlined";
 import DialogActionButton, {
   DialogActionsBar,
 } from "./DialogActionButton";
+import { glassPaperSx, glassBackdropSx } from "./glassDialog";
 
 export default function PhotoMetaDialog({ openDialog, meta, onClose }) {
   if (!meta) return null;
@@ -27,17 +28,16 @@ export default function PhotoMetaDialog({ openDialog, meta, onClose }) {
       maxWidth={false}
       transitionDuration={{ enter: 180, exit: 140 }}
       slotProps={{
+        backdrop: { sx: glassBackdropSx },
         paper: {
-          sx: {
+          sx: (t) => ({
+            ...glassPaperSx(t),
             width: 600,
             maxWidth: "94vw",
             maxHeight: "calc(100vh - 64px)",
-            borderRadius: "24px",
-            backgroundImage: "none",
             display: "flex",
             flexDirection: "column",
-            overflow: "hidden",
-          },
+          }),
         }
       }}
     >

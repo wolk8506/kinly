@@ -9,49 +9,32 @@ import {
   Stack,
   Typography,
   Box,
-  Autocomplete,
-  TextField,
   CircularProgress,
   IconButton,
   Tooltip,
   Alert,
-  Collapse,
-  Fade,
-  Popover,
   Chip,
 } from "@mui/material";
 import { alpha, useTheme } from "@mui/material/styles";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
-import CheckIcon from "@mui/icons-material/Check";
 import NavigateBeforeIcon from "@mui/icons-material/NavigateBefore";
 import NavigateNextIcon from "@mui/icons-material/NavigateNext";
-import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
-import AddIcon from "@mui/icons-material/Add";
-import FaceIcon from "@mui/icons-material/Face";
 import FaceRetouchingNaturalIcon from "@mui/icons-material/FaceRetouchingNatural";
 import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
 import PhotoFaceOverlay from "../../components/PhotoFaceOverlay";
+import FaceFramesHelpPopover from "../../components/FaceFramesHelpPopover";
+import { PhotoFaceFormSection } from "../../components/PhotoFaceMarkupBlocks";
 import AppButton from "../../components/AppButton";
 import {
   buildReviewQueue,
   buildNoFacesQueue,
-  confirmFaceAssignment,
-  confirmExternalFaceAssignment,
   getPendingFaceIds,
-  getPersonLabel,
   normalizeFaces,
   syncPeopleFromFaces,
   syncExternalPeopleFromFaces,
   faceNeedsReview,
   createDefaultFace,
 } from "../../utils/photoFaces";
-import {
-  buildFaceTagOptions,
-  faceTagOptionFromFace,
-  applyFaceTagOption,
-  getExternalEntityLabel,
-} from "../../utils/externalEntities";
-import { distanceToConfidence } from "../../services/faceRecognition";
 import { detectFacesFromImageUrl } from "../../services/faceDetection";
 import {
   suggestPersonsFromFaceIndex,
@@ -117,6 +100,7 @@ export default function FacesQueueView({
 
   const [allPeople, setAllPeople] = useState(allPeopleProp);
   const [allExternal, setAllExternal] = useState([]);
+  const [allPhotos, setAllPhotos] = useState([]);
   const [queue, setQueue] = useState([]);
   const [photoIndex, setPhotoIndex] = useState(0);
   const [faceIndex, setFaceIndex] = useState(0);
@@ -143,11 +127,6 @@ export default function FacesQueueView({
   );
   const currentFaceId = allFaceIds[faceIndex] ?? null;
 
-  const faceTagOptions = useMemo(
-    () => buildFaceTagOptions(allPeople, allExternal),
-    [allPeople, allExternal],
-  );
-
   const syncCount = useCallback(
     (nextQueue) => {
       if (isNoFaces) {
@@ -168,6 +147,7 @@ export default function FacesQueueView({
     setLoading(true);
     try {
       const photos = await window.photoAPI.getAllGlobal();
+      setAllPhotos(photos);
       const nextQueue = isNoFaces
         ? buildNoFacesQueue(photos)
         : buildReviewQueue(photos);
@@ -450,36 +430,6 @@ export default function FacesQueueView({
     }
   };
 
-  const handleAcceptSuggestion = async (face) => {
-    if (!face?.suggestedPersonId && !face?.suggestedExternalEntityId) return;
-    setSaving(true);
-    try {
-      const nextFaces = currentFaces.map((f) =>
-        f.id !== face.id
-          ? f
-          : face.suggestedExternalEntityId
-            ? confirmExternalFaceAssignment(f, face.suggestedExternalEntityId)
-            : confirmFaceAssignment(f, face.suggestedPersonId),
-      );
-      await afterSave(nextFaces);
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  const handleAssignFace = async (faceId, option) => {
-    if (!faceId || !option) return;
-    setSaving(true);
-    try {
-      const nextFaces = currentFaces.map((f) =>
-        f.id === faceId ? applyFaceTagOption(f, option) : f,
-      );
-      await afterSave(nextFaces);
-    } finally {
-      setSaving(false);
-    }
-  };
-
   const handleDeleteFace = async (faceId) => {
     setSaving(true);
     try {
@@ -745,44 +695,6 @@ export default function FacesQueueView({
               flexDirection: "column",
             }}
           >
-            <Stack
-              direction="row"
-              spacing={1}
-              sx={{
-                alignItems: "center",
-                justifyContent: "space-between",
-                px: 2,
-                py: 1.5,
-                borderBottom: `1px solid ${theme.palette.divider}`,
-                flexShrink: 0
-              }}>
-              <Stack direction="row" spacing={1} sx={{
-                alignItems: "center"
-              }}>
-                <FaceIcon fontSize="small" color="primary" />
-                <Typography variant="subtitle2" sx={{
-                  fontWeight: 700
-                }}>
-                  Лица на фото
-                </Typography>
-                {currentFaces.length > 0 && (
-                  <Typography variant="caption" sx={{
-                    color: "text.secondary"
-                  }}>
-                    {currentFaces.length}
-                  </Typography>
-                )}
-              </Stack>
-              <AppButton
-                preset="secondary"
-                startIcon={<AddIcon sx={{ fontSize: 16 }} />}
-                onClick={handleAddFace}
-                disabled={saving}
-              >
-                Лицо
-              </AppButton>
-            </Stack>
-
             <Box
               sx={{
                 flexGrow: 1,
@@ -804,235 +716,21 @@ export default function FacesQueueView({
                 </Alert>
               )}
 
-              {currentFaces.length > 0 ? (
-                currentFaces.map((face, index) => {
-                  const isPending = faceNeedsReview(face);
-                  const suggestedPerson = allPeople.find(
-                    (p) => p.id === face.suggestedPersonId,
-                  );
-                  const suggestedExternal = allExternal.find(
-                    (e) => e.id === face.suggestedExternalEntityId,
-                  );
-                  const confidence =
-                    face.suggestDistance != null
-                      ? distanceToConfidence(face.suggestDistance)
-                      : null;
-
-                  const isSelected = face.id === currentFaceId;
-                  const selectedOption = faceTagOptionFromFace(
-                    face,
-                    allPeople,
-                    allExternal,
-                  );
-
-                  const showSuggestion =
-                    isPending &&
-                    Boolean(suggestedPerson || suggestedExternal);
-                  const suggestedName = suggestedPerson
-                    ? getPersonLabel(suggestedPerson)
-                    : getExternalEntityLabel(suggestedExternal);
-                  const suggestedId = suggestedPerson
-                    ? suggestedPerson.id
-                    : suggestedExternal?.id;
-                  const suggestionLabel = `Предложено${
-                    confidence != null ? ` (${confidence}%)` : ""
-                  }`;
-
-                  return (
-                    <Box
-                      key={face.id}
-                      onClick={() => setFaceIndex(index)}
-                      sx={{
-                        p: 1.25,
-                        borderRadius: "12px",
-                        border: `1px solid ${
-                          isSelected
-                            ? theme.palette.primary.main
-                            : theme.palette.divider
-                        }`,
-                        bgcolor: isSelected
-                          ? alpha(theme.palette.primary.main, 0.08)
-                          : isDark
-                            ? alpha("#fff", 0.02)
-                            : alpha("#000", 0.01),
-                        cursor: "pointer",
-                        transition: "border-color 120ms, background-color 120ms",
-                        "&:hover": {
-                          borderColor: isSelected
-                            ? theme.palette.primary.main
-                            : alpha(theme.palette.text.primary, 0.24),
-                          bgcolor: isSelected
-                            ? alpha(theme.palette.primary.main, 0.1)
-                            : isDark
-                              ? alpha("#fff", 0.04)
-                              : alpha("#000", 0.025),
-                        },
-                      }}
-                    >
-                      <Stack spacing={1}>
-                        <Stack direction="row" spacing={1} sx={{
-                          alignItems: "center"
-                        }}>
-                          <Autocomplete
-                            size="small"
-                            fullWidth
-                            options={faceTagOptions}
-                            groupBy={(opt) =>
-                              opt.kind === "person"
-                                ? "Родственники"
-                                : "Справочник"
-                            }
-                            getOptionLabel={(opt) => opt.label}
-                            isOptionEqualToValue={(a, b) =>
-                              a?.kind === b?.kind && a?.id === b?.id
-                            }
-                            value={selectedOption}
-                            onChange={(_, option) => {
-                              if (option) handleAssignFace(face.id, option);
-                            }}
-                            renderInput={(params) => (
-                              <TextField
-                                {...params}
-                                label={`Лицо ${index + 1}`}
-                                placeholder="Выберите человека"
-                                sx={{
-                                  "& .MuiOutlinedInput-root": {
-                                    borderRadius: "12px",
-                                  },
-                                }}
-                              />
-                            )}
-                            slotProps={{
-                              paper: {
-                                sx: { borderRadius: "12px", mt: 0.5 },
-                              },
-                            }}
-                          />
-
-                          <Tooltip title="Удалить рамку">
-                            <IconButton
-                              size="small"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleDeleteFace(face.id);
-                              }}
-                              disabled={saving}
-                              sx={{
-                                width: 32,
-                                height: 32,
-                                borderRadius: "8px",
-                                color: theme.palette.error.main,
-                                bgcolor: alpha(theme.palette.error.main, 0.1),
-                                "&.MuiIconButton-root:hover:not(.Mui-disabled)":
-                                  {
-                                    bgcolor: `${alpha(
-                                      theme.palette.error.main,
-                                      0.2,
-                                    )} !important`,
-                                  },
-                              }}
-                            >
-                              <DeleteOutlineOutlinedIcon fontSize="small" />
-                            </IconButton>
-                          </Tooltip>
-                        </Stack>
-
-                        <Collapse
-                          in={showSuggestion}
-                          timeout={300}
-                          unmountOnExit
-                          sx={{ width: "100%" }}
-                        >
-                          <Fade in={showSuggestion} timeout={300}>
-                            <Stack
-                              direction="row"
-                              spacing={1}
-                              sx={{
-                                alignItems: "center"
-                              }}
-                            >
-                              <TextField
-                                size="small"
-                                fullWidth
-                                disabled
-                                label={suggestionLabel}
-                                value={
-                                  suggestedId != null
-                                    ? `${suggestedId} :: ${suggestedName}`
-                                    : suggestedName
-                                }
-                                sx={{
-                                  pointerEvents: "none",
-                                  "& .MuiOutlinedInput-root": {
-                                    borderRadius: "12px",
-                                    bgcolor: alpha(
-                                      theme.palette.primary.main,
-                                      0.04,
-                                    ),
-                                    "& fieldset": {
-                                      borderStyle: "dashed",
-                                      borderColor: alpha(
-                                        theme.palette.primary.main,
-                                        0.4,
-                                      ),
-                                    },
-                                  },
-                                  "& .MuiInputBase-input.Mui-disabled": {
-                                    WebkitTextFillColor:
-                                      theme.palette.primary.main,
-                                    fontWeight: 600,
-                                    fontSize: "0.85rem",
-                                  },
-                                  "& .MuiInputLabel-root.Mui-disabled": {
-                                    color: theme.palette.primary.main,
-                                    fontWeight: 500,
-                                  },
-                                }}
-                              />
-
-                              <Tooltip title="Подтвердить предложение">
-                                <IconButton
-                                  size="small"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    handleAcceptSuggestion(face);
-                                  }}
-                                  disabled={saving}
-                                  sx={{
-                                    width: 32,
-                                    height: 32,
-                                    borderRadius: "8px",
-                                    color: theme.palette.success.main,
-                                    bgcolor: alpha(
-                                      theme.palette.success.main,
-                                      0.12,
-                                    ),
-                                    "&.MuiIconButton-root:hover:not(.Mui-disabled)":
-                                      {
-                                        bgcolor: `${alpha(
-                                          theme.palette.success.main,
-                                          0.25,
-                                        )} !important`,
-                                      },
-                                    "&.Mui-disabled": {
-                                      bgcolor: alpha(
-                                        theme.palette.action.disabled,
-                                        0.08,
-                                      ),
-                                    },
-                                  }}
-                                >
-                                  <CheckIcon fontSize="small" />
-                                </IconButton>
-                              </Tooltip>
-                            </Stack>
-                          </Fade>
-                        </Collapse>
-                      </Stack>
-                    </Box>
-                  );
-                })
-              ) : (
+              <PhotoFaceFormSection
+                theme={theme}
+                faces={currentFaces}
+                allPeople={allPeople}
+                allExternal={allExternal}
+                onSelectFace={(id) => {
+                  const idx = allFaceIds.indexOf(id);
+                  if (idx >= 0) setFaceIndex(idx);
+                }}
+                onFacesChange={(nextFaces) => {
+                  afterSave(nextFaces).catch((e) => console.error(e));
+                }}
+                onAddFace={handleAddFace}
+              />
+              {currentFaces.length === 0 && (
                 <Typography
                   variant="body2"
                   sx={{
@@ -1211,48 +909,13 @@ export default function FacesQueueView({
                     </Tooltip>
                   </Box>
 
-                  <Popover
-                    open={Boolean(faceHelpAnchor)}
+                  <FaceFramesHelpPopover
                     anchorEl={faceHelpAnchor}
                     onClose={() => setFaceHelpAnchor(null)}
                     anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
                     transformOrigin={{ vertical: "top", horizontal: "right" }}
-                    slotProps={{
-                      paper: {
-                        sx: { p: 2, maxWidth: 320, borderRadius: "12px" },
-                      },
-                    }}
-                  >
-                    <Typography
-                      variant="subtitle2"
-                      sx={{ mb: 1, fontWeight: 700 }}
-                    >
-                      Управление рамками
-                    </Typography>
-                    <Stack spacing={0.75} component="ul" sx={{ m: 0, pl: 2.2 }}>
-                      <Typography component="li" variant="body2">
-                        <strong>Найти</strong> — авто-поиск лиц на фото
-                      </Typography>
-                      <Typography component="li" variant="body2">
-                        <strong>ЛКМ</strong> по рамке — выбор лица
-                      </Typography>
-                      <Typography component="li" variant="body2">
-                        <strong>Точка справа внизу</strong> (ЛКМ) — изменение
-                        размера рамки
-                      </Typography>
-                      <Typography component="li" variant="body2">
-                        <strong>ПКМ + перетаскивание</strong> — рисование новой
-                        рамки
-                      </Typography>
-                      <Typography component="li" variant="body2">
-                        <strong>ЛКМ + перетаскивание</strong> — перемещение
-                        выбранной рамки
-                      </Typography>
-                      <Typography component="li" variant="body2">
-                        <strong>Backspace</strong> — удалить выделенную рамку
-                      </Typography>
-                    </Stack>
-                  </Popover>
+                    arrowSide="right"
+                  />
                 </Box>
               )}
             </Box>

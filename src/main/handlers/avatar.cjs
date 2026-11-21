@@ -10,7 +10,6 @@ ipcMain.handle("avatar:getPath", (event, personId) => {
 
   const files = fs.readdirSync(dir);
   const avatarFile = files.find((f) => f.startsWith("avatar"));
-  log.info("🔍 avatar:getPath", personId, "→", avatarFile);
 
   if (avatarFile) {
     return `file://${path.join(dir, avatarFile)}`;

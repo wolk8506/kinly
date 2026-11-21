@@ -41,7 +41,7 @@ export function UpdateResultDialog() {
       }
       message={
         upToDate
-          ? `Genealogy ${version} · Обновлений не найдено`
+          ? `Kinly ${version} · Обновлений не найдено`
           : view.message
       }
       primaryLabel={upToDate ? "ОК" : "Повторить"}
