@@ -20,6 +20,7 @@ import { useNavigate } from "react-router-dom";
 import EventIcon from "@mui/icons-material/Event";
 import ContactsIcon from "@mui/icons-material/Contacts";
 import MapIcon from "@mui/icons-material/Map";
+import TimelineIcon from "@mui/icons-material/Timeline";
 import { EVENT_TYPES } from "../Page_Person/Event/EventTypesList";
 import TimelineScrubber from "../../components/TimelineScrubber";
 import PhotoFullscreenViewer from "../../components/PhotoFullscreenViewer";
@@ -35,7 +36,6 @@ import {
 import { KIND_COLOR } from "../Page_Map/mapHelpers";
 import { useNotificationStore } from "../../store/useNotificationStore";
 import { DRAWER_HEADER_HEIGHT } from "../../layout/AppDrawer";
-import appIcon from "../../img/app_icon.png";
 
 const THUMB_SIZE = 120;
 const EVENT_CARD_WIDTH = THUMB_SIZE * 2 + 8; // как 2 фото + разделитель
@@ -847,22 +847,25 @@ export default function TimelinePage({
                     sx={{
                       position: "absolute",
                       inset: 0,
-                      bgcolor: theme.palette.primary.main,
+                      bgcolor: theme.palette.accents.pink,
                       filter: "blur(25px)",
                       opacity: 0.15,
                       borderRadius: "50%",
                     }}
                   />
                   <Avatar
-                    src={appIcon}
                     sx={{
                       width: 100,
                       height: 100,
                       border: "4px solid",
                       borderColor: "background.paper",
                       boxShadow: theme.shadows[4],
+                      bgcolor: alpha(theme.palette.accents.pink, 0.16),
+                      color: theme.palette.accents.pink,
                     }}
-                  />
+                  >
+                    <TimelineIcon sx={{ fontSize: 56 }} />
+                  </Avatar>
                 </Box>
 
                 <Box>

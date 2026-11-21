@@ -124,7 +124,7 @@ export function UpdateDialog() {
             letterSpacing: "-0.01em",
           }}
         >
-          Genealogy {notice?.version}
+          Kinly {notice?.version}
         </Typography>
         <Typography
           variant="body2"
@@ -168,7 +168,7 @@ export function UpdateDialog() {
                 display: "block",
                 mt: 0.5
               }}>
-              Файл лежит в папке «Загрузки → GenealogyUpdater» — его можно
+              Файл лежит в папке «Загрузки → KinlyUpdater» — его можно
               запустить и самому.
             </Typography>
           )}

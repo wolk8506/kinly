@@ -33,11 +33,11 @@ npm run test:coverage   # пороги v8 по import/dataStore/jsonStore (см.
 
 ## Импорт и библиотека данных
 
-**Нельзя** в автотестах трогать рабочую папку `~/Documents/Genealogy` (или активный корень из `storage.json`).
+**Нельзя** в автотестах трогать рабочую папку `~/Documents/Kinly` (или активный корень из `storage.json`).
 
 - **Предпросмотр ZIP** (`importArchiveInspect`) — только чтение переданного файла; тесты собирают архив в `tmpdir` через `tests/helpers/buildMinimalImportZip.mjs`.
 - **Полный импорт без IPC** — `importZipFromPath` в `importZipApply.cjs`; в тестах корень задаётся **`GENEALOGY_TEST_ROOT`** (см. `config.cjs` → `getBaseDir`) и обёртка `tests/helpers/testLibraryRoot.mjs` (`withTestLibrary`).
-- **Большая моковая библиотека** (ручные сценарии): `npm run mock:library -- --out <tmpdir>/genealogy-mock --fresh --seed 1`.
+- **Большая моковая библиотека** (ручные сценарии): `npm run mock:library -- --out <tmpdir>/kinly-mock --fresh --seed 1`.
 
 Реальные пользовательские архивы в CI не кладём.
 

@@ -1,6 +1,6 @@
 {
-  "name": "genealogy-react",
-  "productName": "Genealogy",
+  "name": "kinly",
+  "productName": "Kinly",
   "version": "1.15.0",
   "main": "src/main/index.cjs",
   "type": "module",
@@ -10,14 +10,15 @@
   "scripts": {
     "dev": "concurrently \"vite\" \"cross-env NODE_ENV=development electron .\"",
     "build:react": "vite build",
-    "build:electron": "electron-builder --publish never",
+    "build:electron": "node scripts/build-with-progress.mjs --publish never",
     "predist:mac": "node build/dmg/make-background.mjs",
-    "dist:mac": "electron-builder --mac --arm64 --publish never",
+    "dist:mac": "node scripts/build-with-progress.mjs --mac --arm64 --publish never",
+    "dist:mac:dir": "node scripts/build-with-progress.mjs --mac --arm64 --dir --publish never",
     "dmg:background": "node build/dmg/make-background.mjs",
     "win:assets": "node build/win/make-assets.mjs",
     "predist:win": "node build/win/make-assets.mjs",
-    "dist:win": "electron-builder --win --x64 --publish never",
-    "dist:linux": "electron-builder --linux --x64 --publish never",
+    "dist:win": "node scripts/build-with-progress.mjs --win --x64 --publish never",
+    "dist:linux": "node scripts/build-with-progress.mjs --linux --x64 --publish never",
     "mock:library": "node scripts/make-mock-library/make-mock-library.mjs",
     "create:icon:macos": "node scripts/create_Icom_MacOS/create-Imon-MacOS.mjs",
     "build": "npm run build:react && npm run build:electron",
@@ -94,13 +95,13 @@
   },
   "build": {
     "appId": "com.nebula9371.genealogy",
-    "productName": "Genealogy",
+    "productName": "Kinly",
     "artifactName": "${productName}-${version}.${ext}",
     "publish": [
       {
         "provider": "github",
         "owner": "wolk8506",
-        "repo": "genealogy"
+        "repo": "kinly"
       }
     ],
     "icon": "build/icons/icon",
@@ -130,11 +131,11 @@
         }
       ],
       "icon": "build/icons/icon.icns",
-      "identity": "Genealogy Self-Sign"
+      "identity": "Kinly"
     },
     "dmg": {
       "icon": "build/icons/dmg-volume.icns",
-      "title": "Установка Genealogy",
+      "title": "Установка Kinly",
       "background": "build/dmg/background.tiff",
       "window": {
         "width": 600,
@@ -157,7 +158,7 @@
     },
     "win": {
       "target": "nsis",
-      "artifactName": "Genealogy-Setup-${version}.${ext}",
+      "artifactName": "Kinly-Setup-${version}.${ext}",
       "icon": "build/icons/icon.ico"
     },
     "nsis": {

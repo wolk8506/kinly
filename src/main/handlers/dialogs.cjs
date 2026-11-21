@@ -12,7 +12,7 @@ ipcMain.handle("dialog:chooseOpenZip", async () => {
 ipcMain.handle("dialog:chooseSavePath", async (_, defaultName) => {
   const result = await dialog.showSaveDialog({
     title: "Сохранить бэкап",
-    defaultPath: defaultName || "Genealogy.zip",
+    defaultPath: defaultName || "Kinly.zip",
     filters: [{ name: "ZIP Archive", extensions: ["zip"] }],
   });
   return result.canceled ? null : result.filePath;

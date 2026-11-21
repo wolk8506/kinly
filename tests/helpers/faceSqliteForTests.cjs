@@ -1,7 +1,7 @@
 const path = require("path");
 const { closeFaceDb, initializeFaceDb } = require("../../src/main/db/faceDb.cjs");
 
-/** Создаёт валидный genealogy.sqlite в `dir` (использует GENEALOGY_TEST_ROOT). */
+/** Создаёт валидный kinly.sqlite в `dir` (использует GENEALOGY_TEST_ROOT). */
 function createValidFaceSqliteInDir(dir) {
   const prev = process.env.GENEALOGY_TEST_ROOT;
   process.env.GENEALOGY_TEST_ROOT = dir;
@@ -9,7 +9,7 @@ function createValidFaceSqliteInDir(dir) {
     closeFaceDb();
     initializeFaceDb();
     closeFaceDb();
-    return path.join(dir, "genealogy.sqlite");
+    return path.join(dir, "kinly.sqlite");
   } finally {
     if (prev != null) process.env.GENEALOGY_TEST_ROOT = prev;
     else delete process.env.GENEALOGY_TEST_ROOT;

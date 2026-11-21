@@ -15,7 +15,7 @@ describe("formatImportNotificationMessage", () => {
       historyImported: true,
       historyLineCount: 50,
       photoFilesSkipped: 10,
-      restoredDatabaseFiles: ["genealogy.sqlite"],
+      restoredDatabaseFiles: ["kinly.sqlite"],
     });
 
     expect(type).toBe("error");

@@ -2,8 +2,18 @@
 // Страница «Генеалогическое дерево»: модель, раскладка и состояние из URL.
 
 import React, { useMemo } from "react";
-import { Box, Button, CircularProgress, Stack, Typography } from "@mui/material";
+import {
+  Avatar,
+  Box,
+  Button,
+  CircularProgress,
+  Stack,
+  Typography,
+} from "@mui/material";
+import { useTheme, alpha } from "@mui/material/styles";
+import { Link } from "react-router-dom";
 import AccountTreeIcon from "@mui/icons-material/AccountTree";
+import PersonAddAlt1Icon from "@mui/icons-material/PersonAddAlt1";
 import GenealogyTreeCanvas from "./GenealogyTreeCanvas";
 import { DEFAULT_TREE_MODE } from "./treeModes";
 import {
@@ -35,6 +45,9 @@ export default function GenealogyTreePage({
     [graph, personId],
   );
 
+  const theme = useTheme();
+  const hasPeople = (allPeople || []).length > 0;
+
   if (loading) {
     return (
       <Box
@@ -46,6 +59,101 @@ export default function GenealogyTreePage({
         }}
       >
         <CircularProgress size={28} />
+      </Box>
+    );
+  }
+
+  if (!hasPeople) {
+    return (
+      <Box
+        sx={{
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "center",
+          minHeight: "calc(100vh - 130px)",
+          px: 3,
+          textAlign: "center",
+          animation: "fadeIn 0.8s ease-out",
+          "@keyframes fadeIn": {
+            from: { opacity: 0, transform: "translateY(20px)" },
+            to: { opacity: 1, transform: "translateY(0)" },
+          },
+        }}
+      >
+        <Box
+          sx={{
+            p: { xs: 4, md: 6 },
+            width: "100%",
+            maxWidth: 500,
+            borderRadius: "24px",
+            bgcolor: alpha(theme.palette.background.paper, 0.4),
+            border: "1px solid",
+            borderColor: "divider",
+            backdropFilter: "blur(10px)",
+            boxShadow: "0 8px 32px rgba(0,0,0,0.1)",
+          }}
+        >
+          <Stack spacing={3} sx={{ alignItems: "center" }}>
+            <Box sx={{ position: "relative" }}>
+              <Box
+                sx={{
+                  position: "absolute",
+                  inset: 0,
+                  bgcolor: theme.palette.accents.indigo,
+                  filter: "blur(25px)",
+                  opacity: 0.15,
+                  borderRadius: "50%",
+                }}
+              />
+              <Avatar
+                sx={{
+                  width: 100,
+                  height: 100,
+                  border: "4px solid",
+                  borderColor: "background.paper",
+                  boxShadow: theme.shadows[4],
+                  bgcolor: alpha(theme.palette.accents.indigo, 0.16),
+                  color: theme.palette.accents.indigo,
+                }}
+              >
+                <AccountTreeIcon sx={{ fontSize: 56 }} />
+              </Avatar>
+            </Box>
+
+            <Box>
+              <Typography variant="h4" sx={{ fontWeight: 800, mb: 1 }}>
+                Генеалогическое дерево
+              </Typography>
+              <Typography
+                variant="body1"
+                sx={{ color: "text.secondary", maxWidth: 350, mx: "auto" }}
+              >
+                Древо пока пустует. Добавьте первого предка — ветви
+                построятся автоматически.
+              </Typography>
+            </Box>
+
+            <Stack spacing={2} sx={{ width: "100%", mt: 2 }}>
+              <Button
+                variant="contained"
+                component={Link}
+                nativeButton={false}
+                to="/?action=add"
+                size="large"
+                startIcon={<PersonAddAlt1Icon />}
+                sx={{
+                  height: 32,
+                  borderRadius: "999px",
+                  px: 2,
+                  fontWeight: 600,
+                }}
+              >
+                Добавить первого человека
+              </Button>
+            </Stack>
+          </Stack>
+        </Box>
       </Box>
     );
   }

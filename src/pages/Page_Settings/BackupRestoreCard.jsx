@@ -52,7 +52,7 @@ export const BackupRestoreCard = ({ cardStyle, onSubpageChange }) => {
       .toLocaleString("sv-SE", { hour12: false })
       .replace(/[\s:]/g, "-")
       .replace(",", "_");
-    return `Genealogy_Backup_${stamp}`;
+    return `Kinly_Backup_${stamp}`;
   };
 
   // --- Состояние подготовки бэкапа ---

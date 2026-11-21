@@ -871,7 +871,7 @@ export default function MainLayout() {
       : matchPath({ path: item.path, end: false }, location.pathname),
   );
 
-  let pageTitle = "Genealogy";
+  let pageTitle = "Kinly";
 
   if (match) {
     const name =

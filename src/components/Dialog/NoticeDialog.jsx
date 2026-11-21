@@ -3,6 +3,7 @@ import { Box, Dialog, Typography } from "@mui/material";
 import DialogActionButton, {
   DialogActionsBar,
 } from "./DialogActionButton";
+import appIconUrl from "../../../build/icons/icon.png";
 import {
   glassPaperSx,
   glassBackdropSx,
@@ -15,7 +16,7 @@ export function AppIcon({ size = 72, sx }) {
   return (
     <Box
       component="img"
-      src="./app-icon.png"
+      src={appIconUrl}
       alt=""
       sx={[
         {

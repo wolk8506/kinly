@@ -99,7 +99,7 @@ export function HelpHome({ guide, version, iconSrc, onNavigate, onShowSidebar, c
             {guide.title}
           </Typography>
           <Typography sx={{ fontFamily: "inherit", fontSize: 17, color: colors.secondary, mb: 2.5 }}>
-            {version ? `для Genealogy ${version}` : "для Genealogy"}
+            {version ? `для Kinly ${version}` : "для Kinly"}
           </Typography>
           <LinkButton onClick={onShowSidebar} colors={colors} sx={{ gap: 0.75 }}>
             <MenuBookOutlinedIcon sx={{ fontSize: 17 }} />

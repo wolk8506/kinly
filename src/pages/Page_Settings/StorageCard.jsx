@@ -419,7 +419,7 @@ export const StorageCard = ({ cardStyle }) => {
               mb: 1.5,
               lineHeight: 1.5
             }}>
-            В папке есть файлы, но нет признаков библиотеки Genealogy
+            В папке есть файлы, но нет признаков библиотеки Kinly
             (<b>genealogy-data.json</b>, папки <b>people</b>):
           </Typography>
           <Typography

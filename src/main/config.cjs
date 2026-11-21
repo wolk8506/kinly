@@ -4,15 +4,15 @@ const fs = require("fs");
 
 // Единая точка разрешения путей к данным.
 // Активный корень хранится в userData/storage.json и может переключаться
-// между местами хранения, например C:/Genealogy и F:/Архив/Genealogy.
-// По умолчанию — прежнее поведение: Documents/Genealogy.
+// между местами хранения, например C:/Kinly и F:/Архив/Kinly.
+// По умолчанию — Documents/Kinly.
 
 function getStorageFilePath() {
   return path.join(app.getPath("userData"), "storage.json");
 }
 
 function getDefaultRoot() {
-  return path.join(app.getPath("documents"), "Genealogy");
+  return path.join(app.getPath("documents"), "Kinly");
 }
 
 function getActiveRoot() {
@@ -208,7 +208,7 @@ function externalDir(entityId) {
 }
 
 function getFaceDbPath() {
-  return path.join(getBaseDir(), "genealogy.sqlite");
+  return path.join(getBaseDir(), "kinly.sqlite");
 }
 
 function getFaceIndexJsonPath() {
@@ -264,7 +264,7 @@ function formatBytes(bytes) {
   return `${value.toFixed(value >= 100 ? 0 : 1)} ${units[unit]}`;
 }
 
-// Папка похожа на библиотеку Genealogy: есть данные людей или их папка.
+// Папка похожа на библиотеку Kinly: есть данные людей или их папка.
 function isLibraryDir(dirPath) {
   try {
     if (!fs.existsSync(dirPath)) return false;

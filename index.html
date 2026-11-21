@@ -2,7 +2,7 @@
 <html lang="ru">
   <head>
     <meta charset="UTF-8" />
-    <title>Genealogy</title>
+    <title>Kinly</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <style>
       html,
@@ -36,64 +36,43 @@
         pointer-events: none;
       }
 
-      .boot-core {
-        width: 156px;
-        height: 156px;
-        border-radius: 50%;
-        border: 1px solid rgba(120, 170, 255, 0.22);
-        position: relative;
-        animation: boot-spin 7.5s linear infinite;
-      }
-
       .boot-visual {
-        width: 156px;
-        height: 156px;
-        position: relative;
-        display: grid;
-        place-items: center;
+        width: 220px;
+        height: 220px;
         margin: 0 auto;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 18px;
       }
 
-      .boot-core::before {
-        content: "";
-        position: absolute;
-        width: 9px;
-        height: 9px;
-        border-radius: 50%;
-        left: 50%;
-        top: 11px;
-        transform: translateX(-50%);
-        background: #7f9cff;
-        box-shadow: 0 0 16px rgba(127, 156, 255, 0.85);
+      /* Спицы iOS-спиннера неподвижны: по ним бежит волна прозрачности —
+         у каждой спицы своя фаза анимации (animation-delay), как в
+         UIActivityIndicatorView. */
+      .boot-spinner {
+        width: 44px;
+        height: 44px;
+        flex-shrink: 0;
       }
 
-      .boot-inner {
-        position: absolute;
-        inset: 24px;
-        border-radius: 50%;
-        border: 1px dashed rgba(84, 222, 197, 0.35);
-        animation: boot-spin-rev 5.4s linear infinite;
+      .boot-spinner circle {
+        animation: boot-wave 1.2s ease-in-out infinite;
+      }
+
+      @keyframes boot-wave {
+        0%, 100% { opacity: 0.12; }
+        50% { opacity: 1; }
       }
 
       .boot-logo {
-        position: absolute;
-        width: 74px;
-        height: 74px;
+        width: 148px;
+        height: 148px;
         /* border-radius: 20px; */
         object-fit: contain;
         /* background: rgba(4, 8, 19, 0.85); */
         /* border: 1px solid rgba(255, 255, 255, 0.12); */
-        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
-      }
-
-      @keyframes boot-spin {
-        from { transform: rotate(0deg); }
-        to { transform: rotate(360deg); }
-      }
-
-      @keyframes boot-spin-rev {
-        from { transform: rotate(360deg); }
-        to { transform: rotate(0deg); }
+        /* box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35); */
       }
 
     </style>
@@ -102,10 +81,26 @@
     <div id="boot-splash">
       <div>
         <div class="boot-visual">
-          <div class="boot-core">
-            <div class="boot-inner"></div>
-          </div>
-          <img class="boot-logo" src="/app-icon.png" alt="Genealogy" />
+          <img class="boot-logo" src="./build/icons/icon.png" alt="Kinly" />
+          <svg class="boot-spinner" viewBox="0 0 100 100" aria-hidden="true">
+            <!-- 12 спиц-«пилюль» на радиусе ~42 от центра, длинная ось по
+                 касательной (вертикальная линия справа = касательная в точке 3 часа).
+                 opacity — градиент бегущей волны, как в UIActivityIndicatorView -->
+            <g>
+            <circle fill="#7f9cff" cx="92" cy="50" r="4" style="animation-delay:-1.1s" />
+            <circle fill="#78a7f5" cx="92" cy="50" r="4" transform="rotate(30 50 50)" style="animation-delay:-1.0s" />
+            <circle fill="#71b2ec" cx="92" cy="50" r="4" transform="rotate(60 50 50)" style="animation-delay:-0.9s" />
+            <circle fill="#6abde2" cx="92" cy="50" r="4" transform="rotate(90 50 50)" style="animation-delay:-0.8s" />
+            <circle fill="#63c8d9" cx="92" cy="50" r="4" transform="rotate(120 50 50)" style="animation-delay:-0.7s" />
+            <circle fill="#5bd3cf" cx="92" cy="50" r="4" transform="rotate(150 50 50)" style="animation-delay:-0.6s" />
+            <circle fill="#54ddc5" cx="92" cy="50" r="4" transform="rotate(180 50 50)" style="animation-delay:-0.5s" />
+            <circle fill="#5cd1d0" cx="92" cy="50" r="4" transform="rotate(210 50 50)" style="animation-delay:-0.4s" />
+            <circle fill="#65c4dc" cx="92" cy="50" r="4" transform="rotate(240 50 50)" style="animation-delay:-0.3s" />
+            <circle fill="#6eb7e8" cx="92" cy="50" r="4" transform="rotate(270 50 50)" style="animation-delay:-0.2s" />
+            <circle fill="#76a9f3" cx="92" cy="50" r="4" transform="rotate(300 50 50)" style="animation-delay:-0.1s" />
+            <circle fill="#7f9cff" cx="92" cy="50" r="4" transform="rotate(330 50 50)" style="animation-delay:0s" />
+            </g>
+          </svg>
         </div>
       </div>
     </div>

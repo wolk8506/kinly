@@ -6,7 +6,7 @@ import {
 
 export const exportPeopleToZip = async ({
   people,
-  defaultFilename = `Genealogy_export_${Date.now()}.zip`,
+  defaultFilename = `Kinly_export_${Date.now()}.zip`,
   onProgress = () => {},
   onStatus = () => {},
   onError = () => {},
@@ -106,13 +106,13 @@ export const exportPeopleToZip = async ({
       .replace(/^file:\/\//, "")
       .replace(/%20/g, " ");
 
-    // basePath указывает на .../Genealogy/people, а база лежит в .../Genealogy
+    // basePath указывает на .../Kinly/people, а база лежит в .../Kinly
     const genealogyRootPath = basePath.endsWith("/people")
       ? basePath.slice(0, -"/people".length)
       : basePath;
 
     console.log("[exportToZip] Clean basePath for Node.js:", basePath);
-    console.log("[exportToZip] Genealogy root path:", genealogyRootPath);
+    console.log("[exportToZip] Kinly root path:", genealogyRootPath);
 
     onStatus("Подготовка бэкапа...");
     const total = Array.isArray(people) ? people.length : 0;
@@ -161,9 +161,9 @@ export const exportPeopleToZip = async ({
     archiveFiles.push(jsonPath);
 
     const databaseFiles = [
-      "genealogy.sqlite",
-      "genealogy.sqlite-wal",
-      "genealogy.sqlite-shm",
+      "kinly.sqlite",
+      "kinly.sqlite-wal",
+      "kinly.sqlite-shm",
     ];
     for (const fileName of databaseFiles) {
       try {

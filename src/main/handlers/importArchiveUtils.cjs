@@ -4,7 +4,14 @@ const { parseGenealogyDataFile } = require("./dataStore.cjs");
 
 const APP_IDENTIFIER = "MY_GENEALOGY_APP";
 const PHOTO_FOLDERS = new Set(["original", "thumbs", "webp"]);
-const DB_FILES = ["genealogy.sqlite", "genealogy.sqlite-wal", "genealogy.sqlite-shm"];
+const DB_FILES = ["kinly.sqlite", "kinly.sqlite-wal", "kinly.sqlite-shm"];
+// Имена в архивах, созданных до переименования БД в kinly.sqlite.
+const LEGACY_DB_FILES = [
+  "genealogy.sqlite",
+  "genealogy.sqlite-wal",
+  "genealogy.sqlite-shm",
+];
+const ALL_DB_FILES = new Set([...DB_FILES, ...LEGACY_DB_FILES]);
 
 function normalizeZipEntryName(name) {
   return String(name || "")
@@ -13,7 +20,7 @@ function normalizeZipEntryName(name) {
 }
 
 function isDatabaseArtifact(name) {
-  return DB_FILES.includes(path.basename(normalizeZipEntryName(name)));
+  return ALL_DB_FILES.has(path.basename(normalizeZipEntryName(name)));
 }
 
 function findZipEntry(entries, targetName) {
@@ -61,6 +68,7 @@ module.exports = {
   APP_IDENTIFIER,
   PHOTO_FOLDERS,
   DB_FILES,
+  LEGACY_DB_FILES,
   normalizeZipEntryName,
   isDatabaseArtifact,
   findZipEntry,

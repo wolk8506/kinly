@@ -11,12 +11,12 @@ import {
   alpha,
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
+import ContactsIcon from "@mui/icons-material/Contacts";
 import { useSearchParams } from "react-router-dom";
 import { ExternalEntityCard } from "./ExternalEntityCard";
 import { filterActiveExternal } from "../../utils/externalEntities";
 import { usePeopleListStore } from "../../store/usePeopleListStore";
 import AddExternalEntityDialog from "../../components/Dialog/AddExternalEntityDialog";
-import appIcon from "../../img/app_icon.png";
 
 export default function ExternalPeoplePage({
   externalSearch = "",
@@ -156,22 +156,25 @@ export default function ExternalPeoplePage({
                   sx={{
                     position: "absolute",
                     inset: 0,
-                    bgcolor: theme.palette.primary.main,
+                    bgcolor: theme.palette.accents.orange,
                     filter: "blur(25px)",
                     opacity: 0.15,
                     borderRadius: "50%",
                   }}
                 />
                 <Avatar
-                  src={appIcon}
                   sx={{
                     width: 100,
                     height: 100,
                     border: "4px solid",
                     borderColor: "background.paper",
                     boxShadow: theme.shadows[4],
+                    bgcolor: alpha(theme.palette.accents.orange, 0.16),
+                    color: theme.palette.accents.orange,
                   }}
-                />
+                >
+                  <ContactsIcon sx={{ fontSize: 56 }} />
+                </Avatar>
               </Box>
 
               <Box>

@@ -23,6 +23,7 @@ import PhotoCameraIcon from "@mui/icons-material/PhotoCamera";
 import PetsIcon from "@mui/icons-material/Pets";
 import PersonOutlineOutlinedIcon from "@mui/icons-material/PersonOutlineOutlined";
 import LinkIcon from "@mui/icons-material/Link";
+import ContactsIcon from "@mui/icons-material/Contacts";
 import ExternalEntityAvatar from "../../components/ExternalEntityAvatar";
 import PersonAvatar from "../../components/PersonAvatar";
 import DialogActionButton from "../../components/Dialog/DialogActionButton";
@@ -142,11 +143,18 @@ export default function ExternalEntityDetail({
   if (!entityId) {
     return (
       <Box sx={{ p: 2 }}>
-        <Typography variant="body2" sx={{
-          color: "text.secondary"
-        }}>
-          Выберите запись из списка слева — здесь появятся подробности.
-        </Typography>
+        <Box sx={groupSx}>
+          <SettingsRow
+            icon={
+              <RowIcon bg="gray">
+                <ContactsIcon sx={{ fontSize: 18 }} />
+              </RowIcon>
+            }
+            title="Запись не выбрана"
+            subtitle="Выберите запись из списка слева — здесь появятся подробности."
+            multiline
+          />
+        </Box>
       </Box>
     );
   }

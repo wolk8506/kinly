@@ -24,6 +24,7 @@ import ManIcon from "@mui/icons-material/Man";
 import WomanIcon from "@mui/icons-material/Woman";
 import CalendarMonthIcon from "@mui/icons-material/CalendarMonth";
 import PhotoLibraryIcon from "@mui/icons-material/PhotoLibrary";
+import CollectionsIcon from "@mui/icons-material/Collections";
 // import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp";
 import PhotoFullscreenViewer from "../../components/PhotoFullscreenViewer";
 import TimelineScrubber from "../../components/TimelineScrubber";
@@ -52,7 +53,6 @@ import { useGalleryScrubber } from "../../features/photoGallery/useGalleryScrubb
 import { useGalleryDelete } from "../../features/photoGallery/useGalleryDelete";
 import { INSPECTOR_PANEL_WIDTH } from "../../layout/inspectorPanelTransition";
 import { useLocation } from "react-router-dom";
-import appIcon from "../../img/app_icon.png";
 
 export default function GlobalPhotoGallery({
   search,
@@ -361,22 +361,25 @@ export default function GlobalPhotoGallery({
                     sx={{
                       position: "absolute",
                       inset: 0,
-                      bgcolor: theme.palette.primary.main,
+                      bgcolor: theme.palette.accents.purple,
                       filter: "blur(25px)",
                       opacity: 0.15,
                       borderRadius: "50%",
                     }}
                   />
                   <Avatar
-                    src={appIcon}
                     sx={{
                       width: 100,
                       height: 100,
                       border: "4px solid",
                       borderColor: "background.paper",
                       boxShadow: theme.shadows[4],
+                      bgcolor: alpha(theme.palette.accents.purple, 0.16),
+                      color: theme.palette.accents.purple,
                     }}
-                  />
+                  >
+                    <CollectionsIcon sx={{ fontSize: 56 }} />
+                  </Avatar>
                 </Box>
 
                 <Box>

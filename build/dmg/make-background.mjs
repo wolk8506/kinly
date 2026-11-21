@@ -52,7 +52,7 @@ const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${WIDTH}" height="${
       <feDropShadow dx="0" dy="2" stdDeviation="2.4" flood-color="#032b3a" flood-opacity="0.38"/>
     </filter>
     <style>
-      .title { font-family: "Helvetica Neue", Helvetica, Arial, sans-serif; font-weight: 700; }
+      .title { font-family: "Arial Rounded MT Bold", "Helvetica Neue", Arial, sans-serif; }
       .subtitle, .caption, .brand, .site { font-family: "Helvetica Neue", Helvetica, Arial, sans-serif; }
     </style>
   </defs>
@@ -67,7 +67,7 @@ const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${WIDTH}" height="${
   <image href="data:image/png;base64,${icon}" x="261" y="11" width="78" height="78"/>
 
   <text class="title" x="300" y="132" text-anchor="middle" font-size="47"
-        letter-spacing="-1.4" fill="#ffffff" filter="url(#titleShadow)">Genealogy</text>
+        letter-spacing="-1.4" fill="#ffffff" filter="url(#titleShadow)">Kinly</text>
   <text class="subtitle" x="300" y="156" text-anchor="middle" font-size="13.5"
         letter-spacing="0.2" fill="#ffffff" fill-opacity="0.82">Версия ${version}</text>
 
@@ -81,14 +81,14 @@ const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${WIDTH}" height="${
         stroke-linecap="round" stroke-linejoin="round"/>
 
   <text class="caption" x="300" y="426" text-anchor="middle" font-size="15.5"
-        fill="#3a3a3a">Перетащите Genealogy в папку „Программы“</text>
+        fill="#3a3a3a">Перетащите Kinly в папку „Программы“</text>
 
   <!-- Подпись внизу -->
   <image href="data:image/png;base64,${icon_developer}" x="277" y="470" width="46" height="46"/>
   <text class="brand" x="300" y="542" text-anchor="middle" font-size="22"
         font-weight="600" letter-spacing="0.2" fill="#123b4d">nebula.9371</text>
   <text class="site" x="300" y="567" text-anchor="middle" font-size="11.5"
-        letter-spacing="0.2" fill="#8a9299">github.com/wolk8506/genealogy</text>
+        letter-spacing="0.2" fill="#8a9299">github.com/wolk8506/kinly</text>
 </svg>
 `;
 

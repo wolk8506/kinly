@@ -62,7 +62,7 @@ const sidebarSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="164" height="
   <image href="data:image/png;base64,${icon}" x="50" y="26" width="64" height="64"/>
 
   <text class="title" x="82" y="124" text-anchor="middle" font-size="19"
-        font-weight="700" letter-spacing="-0.3" fill="${WHITE}">Genealogy</text>
+        font-weight="700" letter-spacing="-0.3" fill="${WHITE}">Kinly</text>
 
   <rect x="64" y="138" width="36" height="1" fill="${WHITE}" fill-opacity="0.35"/>
 
@@ -74,7 +74,7 @@ const sidebarSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="164" height="
   <text class="brand" x="82" y="282" text-anchor="middle" font-size="12"
         font-weight="600" letter-spacing="0.2" fill="${WHITE}" fill-opacity="0.92">nebula.9371</text>
   <text class="site" x="82" y="296" text-anchor="middle" font-size="8"
-        letter-spacing="0.1" fill="${WHITE}" fill-opacity="0.6">github.com/wolk8506/genealogy</text>
+        letter-spacing="0.1" fill="${WHITE}" fill-opacity="0.6">github.com/wolk8506/kinly</text>
 </svg>`;
 
 const headerSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="150" height="57" viewBox="0 0 150 57">
@@ -89,7 +89,7 @@ const headerSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="150" height="5
   <image href="data:image/png;base64,${icon}" x="10" y="11" width="34" height="34"/>
 
   <text class="name" x="52" y="30" font-size="15" font-weight="700"
-        letter-spacing="-0.3" fill="${INK}">Genealogy</text>
+        letter-spacing="-0.3" fill="${INK}">Kinly</text>
   <text class="sub" x="52" y="43" font-size="8.5"
         letter-spacing="0.2" fill="#6b7c85">УСТАНОВКА</text>
 </svg>`;

@@ -72,9 +72,7 @@ module.exports = (settingsStore) => {
       }
 
       global.globalHashtags = newTags;
-      log.info(
-        `✅ Итоговый индекс: [${Array.from(globalHashtags).join(", ")}]`,
-      ); // ЛОГ 3
+      log.info(`✅ Хештегов в индексе: ${globalHashtags.size}`);
     } catch (err) {
       log.error("❌ Критическая ошибка сканера:", err);
     }

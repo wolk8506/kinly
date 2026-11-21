@@ -138,7 +138,7 @@ function launchInstaller(filePath) {
 }
 
 // После запуска установщика приложение завершается, поэтому папку
-// GenealogyUpdater удаляет отдельный отцепленный процесс: на macOS/Linux —
+// KinlyUpdater удаляет отдельный отцепленный процесс: на macOS/Linux —
 // через несколько секунд, на Windows — с повторами, пока установщик
 // (запущенный exe) не отпустит файл.
 function scheduleUpdaterDirCleanup(filePath) {
@@ -216,16 +216,16 @@ function setupAutoUpdater(win) {
 
     // делаем абсолютный URL
     if (!/^https?:\/\//.test(rawUrl)) {
-      rawUrl = `https://github.com/wolk8506/genealogy/releases/download/${updateInfo.version}/${rawUrl}`;
+      rawUrl = `https://github.com/wolk8506/kinly/releases/download/${updateInfo.version}/${rawUrl}`;
     }
     log.info("🔗 final download URL:", rawUrl);
 
-    const downloadDir = path.join(app.getPath("downloads"), "GenealogyUpdater");
+    const downloadDir = path.join(app.getPath("downloads"), "KinlyUpdater");
     fs.mkdirSync(downloadDir, { recursive: true });
 
     const outputPath = path.join(
       downloadDir,
-      `Genealogy-${updateInfo.version}${targetExt}`
+      `Kinly-${updateInfo.version}${targetExt}`
     );
     log.info("📥 скачиваем в:", outputPath);
 
@@ -270,7 +270,7 @@ function setupAutoUpdater(win) {
 
   // 4) Старые загрузки чистим, свежие оставляем: если установщик не
   // запустился, пользователь может открыть его вручную даже после перезапуска.
-  const tempDir = path.join(app.getPath("downloads"), "GenealogyUpdater");
+  const tempDir = path.join(app.getPath("downloads"), "KinlyUpdater");
   const WEEK = 7 * 24 * 60 * 60 * 1000;
   fs.readdir(tempDir, { withFileTypes: true }, (err, entries) => {
     if (err) return;

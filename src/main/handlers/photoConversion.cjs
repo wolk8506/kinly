@@ -17,7 +17,7 @@ ipcMain.handle("photo:startConversion", async (event, options) => {
   const basePath = getPeopleRoot();
 
   if (!fs.existsSync(basePath))
-    return { success: false, error: "Папка Genealogy не найдена" };
+    return { success: false, error: "Папка Kinly не найдена" };
 
   const personFolders = fs
     .readdirSync(basePath)

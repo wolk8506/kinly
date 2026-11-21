@@ -328,7 +328,7 @@ export const DangerZoneCard = ({ cardStyle }) => {
               lineHeight: 1.5
             }}>
             Это действие безвозвратно удалит <b>всех людей</b> и{" "}
-            <b>все фотографии</b> из папки Genealogy. Приложение станет
+            <b>все фотографии</b> из папки Kinly. Приложение станет
             абсолютно чистым.
           </Typography>
           <TextField

@@ -141,17 +141,17 @@ const PersonPage = forwardRef(
     // useEffect(() => {
     //   // Устанавливаем заголовок при входе на вкладку
     //   if (activeElement === "info")
-    //     document.title = `Genealogy :: Персональная страница [ id:${id} ]`;
+    //     document.title = `Kinly :: Персональная страница [ id:${id} ]`;
     //   if (activeElement === "photo")
-    //     document.title = `Genealogy :: Персональная страница [ id:${id} ] - Фотоальбом`;
+    //     document.title = `Kinly :: Персональная страница [ id:${id} ] - Фотоальбом`;
     //   if (activeElement === "bio")
-    //     document.title = `Genealogy :: Персональная страница [ id:${id} ] - Биография`;
+    //     document.title = `Kinly :: Персональная страница [ id:${id} ] - Биография`;
     //   if (activeElement === "files")
-    //     document.title = `Genealogy :: Персональная страница [ id:${id} ] – Файлы`;
+    //     document.title = `Kinly :: Персональная страница [ id:${id} ] – Файлы`;
 
     //   // (Опционально) Возвращаем старое название при уходе с вкладки
     //   return () => {
-    //     document.title = "Genealogy";
+    //     document.title = "Kinly";
     //   };
     // }, [activeElement]);
 

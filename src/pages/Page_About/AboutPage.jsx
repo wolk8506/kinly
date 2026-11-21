@@ -18,8 +18,8 @@ import BalanceIcon from "@mui/icons-material/Balance";
 
 import AppDiagnostic from "./AppInfo";
 
-import appIcon from "../../img/app_icon.png";
-import developer from "../../img/developer.png";
+import appIcon from "../../../build/icons/app-icon.png";
+import developer from "../../../build/icons/developer.png";
 import {
   groupSx,
   RowDivider,
@@ -93,16 +93,17 @@ export default function AboutPage({ cardStyle }) {
     >
       <Stack spacing={3}>
         <Stack direction="row" spacing={2.5} sx={{
-          alignItems: "center"
+          alignItems: "center",
+          justifyContent: "center",
         }}>
           <Box sx={{ position: "relative", flexShrink: 0 }}>
             <Box
               sx={{
                 position: "absolute",
                 inset: 0,
-                bgcolor: "primary.main",
-                filter: "blur(25px)",
-                opacity: 0.18,
+                // bgcolor: "primary.main",
+                // filter: "blur(25px)",
+                // opacity: 0.18,
                 borderRadius: "50%",
               }}
             />
@@ -110,20 +111,21 @@ export default function AboutPage({ cardStyle }) {
               src={appIcon}
               variant="rounded"
               sx={{
-                width: 88,
-                height: 88,
+                width: 320,
+                height: 150,
                 borderRadius: "20px",
-                boxShadow: 4,
+                boxShadow: "none",
+                border: "none",
                 position: "relative",
               }}
             />
           </Box>
-          <Box sx={{ minWidth: 0 }}>
+          {/* <Box sx={{ minWidth: 0 }}>
             <Typography
               variant="h4"
               sx={{ fontWeight: 800, lineHeight: 1.1 }}
             >
-              Генеалогия
+              Kinly
             </Typography>
             <Typography
               variant="body2"
@@ -133,7 +135,7 @@ export default function AboutPage({ cardStyle }) {
               }}>
               Хранитель вашей семейной истории
             </Typography>
-          </Box>
+          </Box> */}
         </Stack>
 
         <Typography
@@ -345,10 +347,10 @@ export default function AboutPage({ cardStyle }) {
                 </RowIcon>
               }
               title="Исходный код"
-              subtitle="github.com/wolk8506/genealogy"
+              subtitle="github.com/wolk8506/kinly"
               onClick={() =>
                 window.open(
-                  "https://github.com/wolk8506/genealogy",
+                  "https://github.com/wolk8506/kinly",
                   "_blank",
                   "noopener,noreferrer",
                 )
